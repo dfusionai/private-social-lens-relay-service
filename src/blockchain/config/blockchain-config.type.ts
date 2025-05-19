@@ -9,6 +9,13 @@ export type WalletConfig = {
   gasLimit: number;
   maxFeePerGas: string;
   maxPriorityFeePerGas: string;
+  pool: {
+    enabled: boolean;
+    size: number;
+    maxWaitMs: number;
+    maxAcquisitionTimeMs: number;
+    privateKeysEnvPrefix: string;
+  };
 };
 
 export type ContractsConfig = {

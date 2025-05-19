@@ -8,6 +8,7 @@ import {
   IsPositive,
   IsString,
   Min,
+  IsBoolean,
 } from 'class-validator';
 import { BlockchainModuleConfig } from './blockchain-config.type';
 
@@ -46,6 +47,29 @@ class BlockchainEnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   WALLET_MAX_PRIORITY_FEE_PER_GAS: string;
+
+  @IsBoolean()
+  @IsOptional()
+  WALLET_POOL_ENABLED: boolean;
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  WALLET_POOL_SIZE: number;
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  WALLET_POOL_MAX_WAIT_MS: number;
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  WALLET_POOL_MAX_ACQUISITION_TIME_MS: number;
+
+  @IsString()
+  @IsOptional()
+  WALLET_POOL_PRIVATE_KEYS_ENV_PREFIX: string;
 
   @IsString()
   @IsOptional()
@@ -99,6 +123,21 @@ export default registerAs<BlockchainModuleConfig>('blockchain', () => {
       maxFeePerGas: process.env.WALLET_MAX_FEE_PER_GAS || '50000000000', // 50 gwei
       maxPriorityFeePerGas:
         process.env.WALLET_MAX_PRIORITY_FEE_PER_GAS || '1500000000', // 1.5 gwei
+      pool: {
+        enabled: process.env.WALLET_POOL_ENABLED === 'true' || false,
+        size: process.env.WALLET_POOL_SIZE
+          ? parseInt(process.env.WALLET_POOL_SIZE, 10)
+          : 5,
+        maxWaitMs: process.env.WALLET_POOL_MAX_WAIT_MS
+          ? parseInt(process.env.WALLET_POOL_MAX_WAIT_MS, 10)
+          : 5000,
+        maxAcquisitionTimeMs: process.env.WALLET_POOL_MAX_ACQUISITION_TIME_MS
+          ? parseInt(process.env.WALLET_POOL_MAX_ACQUISITION_TIME_MS, 10)
+          : 60000,
+        privateKeysEnvPrefix:
+          process.env.WALLET_POOL_PRIVATE_KEYS_ENV_PREFIX ||
+          'WALLET_PRIVATE_KEY_',
+      },
     },
     contracts: {
       dataRegistry: {

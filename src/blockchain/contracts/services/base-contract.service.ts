@@ -16,6 +16,8 @@ export abstract class BaseContractService implements OnModuleInit {
   protected provider: ethers.providers.JsonRpcProvider;
   protected wallet: ethers.Wallet;
   protected contract: ethers.Contract;
+  protected useWalletPool = false;
+  protected chainId: number;
 
   protected constructor(
     protected readonly configService: ConfigService,
@@ -29,6 +31,21 @@ export abstract class BaseContractService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     this.initializeProvider();
     await this.initializeWallet();
+
+    // Check wallet pool configuration
+    const config = this.configService.get<BlockchainModuleConfig>(
+      'blockchain',
+      { infer: true },
+    );
+    if (config && config.wallet.pool.enabled) {
+      this.useWalletPool = true;
+      this.logger.log('Contract service configured to use wallet pool');
+    }
+
+    // Store chain ID
+    if (config) {
+      this.chainId = config.blockchain.chainId;
+    }
   }
 
   /**
@@ -49,6 +66,14 @@ export abstract class BaseContractService implements OnModuleInit {
     this.logger.log(
       `Provider initialized for network: ${config.blockchain.network}`,
     );
+  }
+
+  /**
+   * Get the chain ID for the current blockchain
+   * @returns The chain ID as a number
+   */
+  public getChainId(): number {
+    return this.chainId;
   }
 
   /**
@@ -150,6 +175,55 @@ export abstract class BaseContractService implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         `Error sending transaction to ${method}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Send a transaction to the contract using a wallet from the pool
+   *
+   * @param method - Contract method to call
+   * @param value - Value to send in ether
+   * @param args - Arguments for the method
+   * @returns Transaction hash
+   */
+  protected async sendTransactionWithPoolWallet(
+    method: string,
+    value: string = '0',
+    ...args: any[]
+  ): Promise<string> {
+    try {
+      // Check if wallet pool is enabled, otherwise fallback to default wallet
+      if (!this.useWalletPool) {
+        this.logger.warn('Wallet pool not enabled, using default wallet');
+        return this.sendTransaction(method, value, ...args);
+      }
+
+      // Get the contract interface
+      const contractInterface = this.contract.interface;
+
+      // Encode the function data
+      const data = contractInterface.encodeFunctionData(method, args);
+
+      // Get the contract address
+      const to = this.contract.address;
+
+      // Use the transaction service with pool wallet to send the transaction
+      const txHash =
+        await this.transactionService.sendTransactionWithPoolWallet(
+          to,
+          data,
+          value,
+          'medium',
+        );
+
+      this.logger.log(`Transaction sent with pool wallet: ${txHash}`);
+
+      return txHash;
+    } catch (error) {
+      this.logger.error(
+        `Error sending transaction to ${method} with pool wallet: ${error.message}`,
       );
       throw error;
     }

@@ -33,8 +33,11 @@ import { TasksModule } from './tasks/tasks.module';
 
 import { ApiKeysModule } from './api-keys/api-keys.module';
 
+import { TransactionsModule } from './transactions/transactions.module';
+
 @Module({
   imports: [
+    TransactionsModule,
     ApiKeysModule,
     TasksModule,
     ConfigModule.forRoot({

@@ -5,7 +5,7 @@ export interface TransactionResponse {
   /**
    * Transaction hash from the blockchain
    */
-  transactionHash: string;
+  transactionHash: string | null;
 
   /**
    * Status of the transaction

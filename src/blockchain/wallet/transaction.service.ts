@@ -45,6 +45,96 @@ export class TransactionService {
   }
 
   /**
+   * Sign and send a transaction using wallet from pool
+   *
+   * @param to - Recipient address
+   * @param data - Transaction data
+   * @param value - Transaction value in wei
+   * @param priorityLevel - Priority level for gas price (low, medium, high)
+   * @returns Transaction hash
+   */
+  async sendTransactionWithPoolWallet(
+    to: string,
+    data: string,
+    value: string = '0',
+    priorityLevel: 'low' | 'medium' | 'high' = 'medium',
+  ): Promise<string> {
+    // Get an available wallet from the pool
+    const walletInfo = await this.walletService.getAvailableWallet(
+      this.provider,
+    );
+
+    if (!walletInfo) {
+      throw new Error('No wallets available in the pool');
+    }
+
+    try {
+      const { walletId, wallet } = walletInfo;
+      this.logger.log(`Using wallet ${walletId} for transaction`);
+
+      const config = this.configService.get<BlockchainModuleConfig>(
+        'blockchain',
+        { infer: true },
+      );
+
+      if (!config) {
+        throw new Error('Blockchain configuration not found');
+      }
+
+      // Get the next nonce for this wallet
+      const nonce = await this.getNextNonce(wallet.address);
+
+      // Get optimized gas price based on priority level
+      const { maxFeePerGas, maxPriorityFeePerGas } =
+        await this.getOptimizedGasPrice(priorityLevel);
+
+      // Prepare transaction
+      const tx = {
+        to,
+        data,
+        value: ethers.utils.parseEther(value),
+        nonce,
+        gasLimit: config.wallet.gasLimit,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        type: 2, // EIP-1559 transaction
+      };
+
+      // Sign and send transaction
+      const txResponse = await wallet.sendTransaction(tx);
+      this.logger.log(`Transaction sent: ${txResponse.hash}`);
+
+      // Release the wallet back to the pool
+      this.walletService.releaseWallet(walletId);
+
+      // Store pending transaction
+      this.pendingTransactions.set(txResponse.hash, txResponse);
+
+      // Wait for transaction confirmation in the background
+      this.waitForConfirmation(txResponse.hash)
+        .then((txResult) => {
+          if (!txResult.success) {
+            this.logger.error(`Transaction failed: ${txResult.error}`);
+          }
+        })
+        .catch((error) => {
+          this.logger.error(
+            `Error in transaction confirmation: ${error.message}`,
+          );
+        });
+
+      return txResponse.hash;
+    } catch (error) {
+      // Release the wallet back to the pool in case of error
+      if (walletInfo) {
+        this.walletService.releaseWallet(walletInfo.walletId);
+      }
+      this.logger.error(`Error sending transaction: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
    * Sign and send a transaction
    *
    * @param walletId - ID of the wallet to use for signing

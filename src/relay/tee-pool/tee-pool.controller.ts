@@ -9,12 +9,15 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TeePoolContractService } from '../../blockchain/contracts/services';
 import { RequestProofDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
+import { TransactionsService } from '../../transactions/transactions.service';
+import { TransactionStatus } from '../../transactions/domain/transaction.status';
 
 @ApiTags('TEE Pool')
 @Controller('relay/tee-pool')
 export class TeePoolController {
   constructor(
     private readonly teePoolContractService: TeePoolContractService,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   @Post('request-contribution-proof')
@@ -58,22 +61,61 @@ export class TeePoolController {
     @Body() requestProofDto: RequestProofDto,
   ): Promise<TransactionResponse> {
     try {
-      const transactionHash =
-        await this.teePoolContractService.requestContributionProof(
-          requestProofDto.fileId,
-          requestProofDto.teeFee,
-        );
-
-      return {
-        transactionHash,
-        status: 'success',
-        timestamp: new Date().toISOString(),
-        metadata: {
+      // Prepare common transaction data
+      const transactionData = {
+        method: 'requestContributionProof',
+        chainId: Number(this.teePoolContractService.getChainId()),
+        parameters: {
           fileId: requestProofDto.fileId,
           teeFee: requestProofDto.teeFee,
         },
+        metadata: {
+          fileId: requestProofDto.fileId,
+          teeFee: requestProofDto.teeFee,
+        } as Record<string, any>,
+        transactionState: TransactionStatus.PENDING,
+      };
+      const transaction = await this.transactionService.create(transactionData);
+
+      let transactionHash: string | null = null;
+
+      // Try to call the contract method
+      try {
+        transactionHash =
+          await this.teePoolContractService.requestContributionProof(
+            requestProofDto.fileId,
+            requestProofDto.teeFee,
+          );
+      } catch (contractError) {
+        // Contract call failed, update transaction data
+        await this.transactionService.update(transaction.id, {
+          transactionHash,
+          transactionState: TransactionStatus.FAILED,
+          errorMessage: contractError?.message,
+        });
+        throw new HttpException(
+          `Failed to request contribution proof: ${contractError.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // Store transaction in the database
+      await this.transactionService.update(transaction.id, {
+        transactionHash,
+        transactionState: TransactionStatus.SUCCESS,
+      });
+
+      // Return standardized response
+      return {
+        transactionHash,
+        status: transaction.transactionState,
+        timestamp: transaction.createdAt.toISOString(),
+        metadata: transaction.metadata,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
         `Failed to request contribution proof: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

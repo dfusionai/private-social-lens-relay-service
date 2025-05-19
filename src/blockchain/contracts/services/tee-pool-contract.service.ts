@@ -53,7 +53,7 @@ export class TeePoolContractService
   ): Promise<string> {
     this.logger.log(`Requesting contribution proof for file ID: ${fileId}`);
 
-    return this.sendTransaction(
+    return this.sendTransactionWithPoolWallet(
       'requestContributionProof',
       teeFee.toString(),
       fileId,

@@ -9,11 +9,16 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DlpContractService } from '../../blockchain/contracts/services';
 import { RequestRewardDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
+import { TransactionsService } from '../../transactions/transactions.service';
+import { TransactionStatus } from '../../transactions/domain/transaction.status';
 
 @ApiTags('DLP')
 @Controller('relay/dlp')
 export class DlpController {
-  constructor(private readonly dlpContractService: DlpContractService) {}
+  constructor(
+    private readonly dlpContractService: DlpContractService,
+    private readonly transactionService: TransactionsService,
+  ) {}
 
   @Post('request-reward')
   @ApiOperation({
@@ -58,21 +63,56 @@ export class DlpController {
     @Body() requestRewardDto: RequestRewardDto,
   ): Promise<TransactionResponse> {
     try {
-      const transactionHash = await this.dlpContractService.requestReward(
-        requestRewardDto.fileId,
-        requestRewardDto.proofIndex,
-      );
-
-      return {
-        transactionHash,
-        status: 'success',
-        timestamp: new Date().toISOString(),
+      // Store transaction in the database
+      const transaction = await this.transactionService.create({
+        method: 'requestReward',
+        chainId: Number(this.dlpContractService.getChainId()),
+        parameters: {
+          fileId: requestRewardDto.fileId,
+          proofIndex: requestRewardDto.proofIndex,
+        },
         metadata: {
           fileId: requestRewardDto.fileId,
           proofIndex: requestRewardDto.proofIndex,
         },
+        transactionState: TransactionStatus.PENDING,
+      });
+
+      let transactionHash: string | null = null;
+
+      try {
+        transactionHash = await this.dlpContractService.requestReward(
+          requestRewardDto.fileId,
+          requestRewardDto.proofIndex,
+        );
+      } catch (contractError) {
+        // Contract call failed, update transaction data
+        await this.transactionService.update(transaction.id, {
+          transactionHash,
+          transactionState: TransactionStatus.FAILED,
+          errorMessage: contractError?.message,
+        });
+        throw new HttpException(
+          `Failed to request reward: ${contractError.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await this.transactionService.update(transaction.id, {
+        transactionHash,
+        transactionState: TransactionStatus.SUCCESS,
+      });
+
+      return {
+        transactionHash: transactionHash,
+        status: transaction.transactionState,
+        timestamp: transaction.createdAt.toISOString(),
+        metadata: transaction.metadata,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
         `Failed to request reward: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

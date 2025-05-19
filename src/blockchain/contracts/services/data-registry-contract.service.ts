@@ -57,7 +57,7 @@ export class DataRegistryContractService
       `Adding file with URL ${url} to registry with ${permissions.length} permissions`,
     );
 
-    return this.sendTransaction(
+    return this.sendTransactionWithPoolWallet(
       'addFileWithPermissions',
       '0',
       url,

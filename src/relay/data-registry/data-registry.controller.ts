@@ -9,12 +9,15 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DataRegistryContractService } from '../../blockchain/contracts/services';
 import { AddFileDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
+import { TransactionsService } from '../../transactions/transactions.service';
+import { TransactionStatus } from '../../transactions/domain/transaction.status';
 
 @ApiTags('Data Registry')
 @Controller('relay/data-registry')
 export class DataRegistryController {
   constructor(
     private readonly dataRegistryContractService: DataRegistryContractService,
+    private readonly transactionService: TransactionsService,
   ) {}
 
   @Post('add-file-with-permissions')
@@ -59,23 +62,59 @@ export class DataRegistryController {
   })
   async addFile(@Body() addFileDto: AddFileDto): Promise<TransactionResponse> {
     try {
-      const transactionHash =
-        await this.dataRegistryContractService.addFileWithPermissions(
-          addFileDto.url,
-          addFileDto.ownerAddress,
-          addFileDto.permissions,
-        );
-
-      return {
-        transactionHash,
-        status: 'success',
-        timestamp: new Date().toISOString(),
+      const transactionData = {
+        method: 'addFileWithPermissions',
+        chainId: Number(this.dataRegistryContractService.getChainId()),
+        parameters: {
+          url: addFileDto.url,
+          ownerAddress: addFileDto.ownerAddress,
+          permissions: addFileDto.permissions,
+        },
         metadata: {
           url: addFileDto.url,
           permissionsCount: addFileDto.permissions.length,
         },
+        transactionState: TransactionStatus.PENDING,
+      };
+
+      const transaction = await this.transactionService.create(transactionData);
+
+      let transactionHash: string | null = null;
+
+      try {
+        transactionHash =
+          await this.dataRegistryContractService.addFileWithPermissions(
+            addFileDto.url,
+            addFileDto.ownerAddress,
+            addFileDto.permissions,
+          );
+      } catch (contractError) {
+        await this.transactionService.update(transaction.id, {
+          transactionHash,
+          transactionState: TransactionStatus.FAILED,
+          errorMessage: contractError?.message,
+        });
+        throw new HttpException(
+          `Failed to add file to registry: ${contractError.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await this.transactionService.update(transaction.id, {
+        transactionHash,
+        transactionState: TransactionStatus.SUCCESS,
+      });
+
+      return {
+        transactionHash,
+        status: transaction.transactionState,
+        timestamp: transaction.createdAt.toISOString(),
+        metadata: transaction.metadata,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
         `Failed to add file to registry: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

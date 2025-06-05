@@ -9,6 +9,7 @@ import { IPaginationOptions } from '../utils/types/pagination-options';
 import { ApiKey } from './domain/api-key';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { AllConfigType } from '../config/config.type';
 
 @Injectable()
 export class ApiKeysService {
@@ -17,12 +18,12 @@ export class ApiKeysService {
   constructor(
     // Dependencies here
     private readonly apiKeyRepository: ApiKeyRepository,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService<AllConfigType>,
   ) {
-    // Get a secret key from config or generate one if not available
-    this.secretKey =
-      this.configService.get<string>('API_KEY_SECRET', { infer: true }) ||
-      crypto.randomBytes(32).toString('hex');
+    // Get the secret key from config (required)
+    this.secretKey = this.configService.getOrThrow('apiKey.secret', {
+      infer: true,
+    });
   }
 
   generateApiKey(): { fullKey: string; prefix: string; hash: string } {

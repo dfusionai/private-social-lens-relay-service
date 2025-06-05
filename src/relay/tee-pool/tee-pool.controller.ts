@@ -4,16 +4,24 @@ import {
   Body,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { TeePoolContractService } from '../../blockchain/contracts/services';
 import { RequestProofDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
 import { TransactionsService } from '../../transactions/transactions.service';
 import { TransactionStatus } from '../../transactions/domain/transaction.status';
+import { ApiKeyGuard } from '../../auth/api-key.guard';
 
 @ApiTags('TEE Pool')
 @Controller('relay/tee-pool')
+@UseGuards(ApiKeyGuard)
+@ApiHeader({
+  name: 'x-api-key',
+  description: 'API Key for authentication',
+  required: true,
+})
 export class TeePoolController {
   constructor(
     private readonly teePoolContractService: TeePoolContractService,
@@ -52,6 +60,10 @@ export class TeePoolController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing API key',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

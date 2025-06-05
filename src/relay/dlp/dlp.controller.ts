@@ -4,16 +4,24 @@ import {
   Body,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { DlpContractService } from '../../blockchain/contracts/services';
 import { RequestRewardDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
 import { TransactionsService } from '../../transactions/transactions.service';
 import { TransactionStatus } from '../../transactions/domain/transaction.status';
+import { ApiKeyGuard } from '../../auth/api-key.guard';
 
 @ApiTags('DLP')
 @Controller('relay/dlp')
+@UseGuards(ApiKeyGuard)
+@ApiHeader({
+  name: 'x-api-key',
+  description: 'API Key for authentication',
+  required: true,
+})
 export class DlpController {
   constructor(
     private readonly dlpContractService: DlpContractService,
@@ -54,6 +62,10 @@ export class DlpController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing API key',
   })
   @ApiResponse({
     status: HttpStatus.INTERNAL_SERVER_ERROR,

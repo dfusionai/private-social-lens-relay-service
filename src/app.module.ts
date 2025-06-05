@@ -8,6 +8,7 @@ import appConfig from './config/app.config';
 import mailConfig from './mail/config/mail.config';
 import fileConfig from './files/config/file.config';
 import blockchainConfig from './blockchain/config/blockchain.config';
+import apiKeyConfig from './api-keys/config/api-key.config';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { RelayModule } from './relay/relay.module';
 import path from 'path';
@@ -47,6 +48,7 @@ import { TransactionsModule } from './transactions/transactions.module';
         mailConfig,
         fileConfig,
         blockchainConfig,
+        apiKeyConfig,
       ],
       envFilePath: ['.env'],
     }),

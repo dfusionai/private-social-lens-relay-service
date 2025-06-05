@@ -146,7 +146,8 @@ export class TransactionMonitoringService {
           transactions = result;
         } else if (result && typeof result === 'object') {
           // Try to get data property if it exists
-          transactions = Array.isArray(result.data) ? result.data : [];
+          const resultObj = result as any;
+          transactions = Array.isArray(resultObj.data) ? resultObj.data : [];
         }
       }
 

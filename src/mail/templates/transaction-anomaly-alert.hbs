@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Transaction Anomaly Alert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+        }
+        .alert {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .header {
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .transactions {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .transactions th, .transactions td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .transactions th {
+            background-color: #f2f2f2;
+        }
+        .transactions tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Transaction Anomaly Alert</h1>
+    </div>
+    
+    <div class="alert">
+        <strong>Warning:</strong> Transaction anomalies have been detected.
+    </div>
+    
+    <div class="details">
+        <h2>Anomaly Details</h2>
+        <p><strong>Type:</strong> {{anomalyType}}</p>
+        <p><strong>Summary:</strong> {{summary}}</p>
+        <p><strong>Affected Transactions:</strong> {{transactionCount}}</p>
+        <p><strong>Alert Time:</strong> {{timestamp}}</p>
+    </div>
+    
+    <h3>Transaction List</h3>
+    <table class="transactions">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Method</th>
+                <th>Chain ID</th>
+                <th>Transaction Hash</th>
+                <th>State</th>
+                <th>Error</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each transactions}}
+            <tr>
+                <td>{{this.id}}</td>
+                <td>{{this.method}}</td>
+                <td>{{this.chainId}}</td>
+                <td>{{this.hash}}</td>
+                <td>{{this.state}}</td>
+                <td>{{this.error}}</td>
+                <td>{{this.createdAt}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    
+    <p>Please investigate these anomalies to ensure proper system operation. Consider taking action to address recurring issues.</p>
+    
+    <div class="footer">
+        <p>This is an automated message from the Vana Relay Service monitoring system.</p>
+        <p>Timestamp: {{timestamp}}</p>
+    </div>
+</body>
+</html> 

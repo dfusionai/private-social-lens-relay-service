@@ -110,18 +110,11 @@ export class TransactionService {
       // Store pending transaction
       this.pendingTransactions.set(txResponse.hash, txResponse);
 
-      // Wait for transaction confirmation in the background
-      this.waitForConfirmation(txResponse.hash)
-        .then((txResult) => {
-          if (!txResult.success) {
-            this.logger.error(`Transaction failed: ${txResult.error}`);
-          }
-        })
-        .catch((error) => {
-          this.logger.error(
-            `Error in transaction confirmation: ${error.message}`,
-          );
-        });
+      // Wait for transaction confirmation
+      const txResult = await this.waitForConfirmation(txResponse.hash);
+      if (!txResult.success) {
+        throw new Error(`Transaction failed: ${txResult.error}`);
+      }
 
       return txResponse.hash;
     } catch (error) {
@@ -328,10 +321,31 @@ export class TransactionService {
    * Extract revert reason from transaction error
    *
    * @param error - Error from transaction
+   * @param txHash - Transaction hash for additional context
    * @returns Extracted revert reason
    */
-  private extractRevertReason(error: any): string {
+  private async extractRevertReason(
+    error: any,
+    txHash?: string,
+  ): Promise<string> {
     try {
+      // For CALL_EXCEPTION errors with receipt, try to get revert reason
+      if (error.code === 'CALL_EXCEPTION' && error.receipt && txHash) {
+        try {
+          const revertReason = await this.getRevertReasonFromReceipt(
+            txHash,
+            error.transaction,
+          );
+          if (revertReason) {
+            return revertReason;
+          }
+        } catch (revertError) {
+          this.logger.warn(
+            `Failed to get revert reason for ${txHash}: ${revertError.message}`,
+          );
+        }
+      }
+
       // Check if error has data property (typical for revert errors)
       if (error.data) {
         return `Revert reason: ${error.data}`;
@@ -371,6 +385,93 @@ export class TransactionService {
     } catch {
       // If error parsing fails, return the original error message
       return error.message || 'Unknown error';
+    }
+  }
+
+  /**
+   * Get revert reason from a failed transaction receipt
+   *
+   * @param txHash - Transaction hash
+   * @param transaction - Original transaction object
+   * @returns Revert reason string
+   */
+  private async getRevertReasonFromReceipt(
+    txHash: string,
+    transaction: any,
+  ): Promise<string | null> {
+    try {
+      // Call the transaction again to get the revert reason
+      await this.provider.call(
+        {
+          to: transaction.to,
+          data: transaction.data,
+          value: transaction.value,
+          gasLimit: transaction.gasLimit,
+          from: transaction.from,
+        },
+        transaction.blockNumber - 1,
+      );
+
+      // If the call succeeds, it means the transaction should have succeeded
+      // This might happen in edge cases
+      return `Transaction reverted but call simulation succeeded. Hash: ${txHash}`;
+    } catch (callError: any) {
+      // The call failed, which is expected for a reverted transaction
+      // Try to extract the revert reason from the call error
+
+      if (callError.data) {
+        // Try to decode the error data
+        try {
+          const errorData = callError.data;
+
+          if (typeof errorData === 'string' && errorData.startsWith('0x')) {
+            // Standard revert with reason string
+            if (errorData.length > 10) {
+              // Remove error selector (0x08c379a0 for Error(string))
+              let strippedData = errorData;
+              if (errorData.startsWith('0x08c379a0')) {
+                strippedData = '0x' + errorData.slice(10);
+              }
+
+              try {
+                // Decode as ABI-encoded string
+                const decoded = ethers.utils.defaultAbiCoder.decode(
+                  ['string'],
+                  strippedData,
+                );
+                if (decoded && decoded[0]) {
+                  return `Contract reverted: ${decoded[0]}`;
+                }
+              } catch {
+                // If ABI decoding fails, try UTF-8
+                try {
+                  const utf8Decoded = ethers.utils.toUtf8String(strippedData);
+                  if (utf8Decoded && utf8Decoded.length > 0) {
+                    return `Contract reverted: ${utf8Decoded}`;
+                  }
+                } catch {
+                  // Return raw hex data if all decoding fails
+                  return `Contract reverted with data: ${errorData}`;
+                }
+              }
+            }
+          }
+
+          return `Contract reverted with data: ${errorData}`;
+        } catch {
+          return `Contract reverted with unparseable data`;
+        }
+      }
+
+      if (callError.reason) {
+        return `Contract reverted: ${callError.reason}`;
+      }
+
+      if (callError.message) {
+        return `Contract reverted: ${callError.message}`;
+      }
+
+      return `Contract reverted without reason`;
     }
   }
 
@@ -418,7 +519,7 @@ export class TransactionService {
       this.pendingTransactions.delete(txHash);
 
       // Extract and return the revert reason
-      const revertReason = this.extractRevertReason(error);
+      const revertReason = await this.extractRevertReason(error, txHash);
 
       // Return failure status with error message
       return {

@@ -108,32 +108,23 @@ export default registerAs<BlockchainModuleConfig>('blockchain', () => {
 
   return {
     blockchain: {
-      provider: process.env.BLOCKCHAIN_PROVIDER || 'http://localhost:8545',
-      network: process.env.BLOCKCHAIN_NETWORK || 'local',
-      chainId: process.env.BLOCKCHAIN_CHAIN_ID
-        ? parseInt(process.env.BLOCKCHAIN_CHAIN_ID, 10)
-        : 1337,
+      provider: process.env.BLOCKCHAIN_PROVIDER || '',
+      network: process.env.BLOCKCHAIN_NETWORK || 'testnet',
+      chainId: Number(process.env.BLOCKCHAIN_CHAIN_ID) || 11155111,
     },
     wallet: {
       privateKeyEnvVar:
         process.env.WALLET_PRIVATE_KEY_ENV_VAR || 'WALLET_PRIVATE_KEY',
-      gasLimit: process.env.WALLET_GAS_LIMIT
-        ? parseInt(process.env.WALLET_GAS_LIMIT, 10)
-        : 3000000,
-      maxFeePerGas: process.env.WALLET_MAX_FEE_PER_GAS || '50000000000', // 50 gwei
+      gasLimit: Number(process.env.WALLET_GAS_LIMIT) || 3000000,
+      maxFeePerGas: process.env.WALLET_MAX_FEE_PER_GAS || '50000000000',
       maxPriorityFeePerGas:
-        process.env.WALLET_MAX_PRIORITY_FEE_PER_GAS || '1500000000', // 1.5 gwei
+        process.env.WALLET_MAX_PRIORITY_FEE_PER_GAS || '1500000000',
       pool: {
-        enabled: process.env.WALLET_POOL_ENABLED === 'true' || false,
-        size: process.env.WALLET_POOL_SIZE
-          ? parseInt(process.env.WALLET_POOL_SIZE, 10)
-          : 5,
-        maxWaitMs: process.env.WALLET_POOL_MAX_WAIT_MS
-          ? parseInt(process.env.WALLET_POOL_MAX_WAIT_MS, 10)
-          : 5000,
-        maxAcquisitionTimeMs: process.env.WALLET_POOL_MAX_ACQUISITION_TIME_MS
-          ? parseInt(process.env.WALLET_POOL_MAX_ACQUISITION_TIME_MS, 10)
-          : 60000,
+        enabled: process.env.WALLET_POOL_ENABLED === 'true',
+        size: Number(process.env.WALLET_POOL_SIZE) || 5,
+        maxWaitMs: Number(process.env.WALLET_POOL_MAX_WAIT_MS) || 5000,
+        maxAcquisitionTimeMs:
+          Number(process.env.WALLET_POOL_MAX_ACQUISITION_TIME_MS) || 60000,
         privateKeysEnvPrefix:
           process.env.WALLET_POOL_PRIVATE_KEYS_ENV_PREFIX ||
           'WALLET_PRIVATE_KEY_',
@@ -151,16 +142,26 @@ export default registerAs<BlockchainModuleConfig>('blockchain', () => {
       },
     },
     gas: {
-      maxGasPrice: process.env.GAS_MAX_GAS_PRICE || '100000000000', // 100 gwei
-      gasLimitMultiplier: process.env.GAS_LIMIT_MULTIPLIER
-        ? parseFloat(process.env.GAS_LIMIT_MULTIPLIER)
-        : 1.2,
-      retryCount: process.env.GAS_RETRY_COUNT
-        ? parseInt(process.env.GAS_RETRY_COUNT, 10)
-        : 3,
-      retryDelayMs: process.env.GAS_RETRY_DELAY_MS
-        ? parseInt(process.env.GAS_RETRY_DELAY_MS, 10)
-        : 1000,
+      maxGasPrice: process.env.GAS_MAX_GAS_PRICE || '100000000000',
+      gasLimitMultiplier: Number(process.env.GAS_LIMIT_MULTIPLIER) || 1.2,
+      retryCount: Number(process.env.GAS_RETRY_COUNT) || 3,
+      retryDelayMs: Number(process.env.GAS_RETRY_DELAY_MS) || 1000,
+    },
+    monitoring: {
+      wallet: {
+        defaultThreshold:
+          process.env.MONITORING_WALLET_DEFAULT_THRESHOLD || '0.1',
+        operationsEmail:
+          process.env.MONITORING_OPERATIONS_EMAIL || 'operations@example.com',
+      },
+      transaction: {
+        highGasThreshold:
+          Number(process.env.MONITORING_HIGH_GAS_THRESHOLD) || 500000000000,
+        failureCountThreshold:
+          Number(process.env.MONITORING_FAILURE_COUNT_THRESHOLD) || 3,
+        checkPeriodHours:
+          Number(process.env.MONITORING_CHECK_PERIOD_HOURS) || 24,
+      },
     },
   };
 });

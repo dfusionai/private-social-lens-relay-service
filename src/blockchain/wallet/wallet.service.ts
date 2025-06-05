@@ -25,6 +25,9 @@ export class WalletService implements OnModuleInit {
   private walletAcquisitionTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private maxAcquisitionTime = 60000; // 60 seconds timeout
 
+  // Wallet addresses cache
+  private walletAddressCache: Map<string, string> = new Map();
+
   constructor(private readonly configService: ConfigService) {
     // Get encryption key from environment variable
     const encryptionKeyEnvVar =
@@ -600,5 +603,42 @@ export class WalletService implements OnModuleInit {
     decrypted += decipher.final('utf8');
 
     return decrypted;
+  }
+
+  /**
+   * Get all wallet IDs in the pool
+   *
+   * @returns Array of wallet IDs
+   */
+  getWalletIds(): string[] {
+    return [...this.walletPool];
+  }
+
+  /**
+   * Get the wallet address for a given wallet ID
+   *
+   * @param walletId The wallet ID
+   * @returns The wallet's Ethereum address
+   */
+  getWalletAddress(walletId: string): string {
+    // Check if address is in cache
+    if (this.walletAddressCache.has(walletId)) {
+      return this.walletAddressCache.get(walletId) || '';
+    }
+
+    try {
+      // Get wallet instance (without provider to avoid network calls)
+      const wallet = this.getWallet(walletId);
+
+      // Store address in cache
+      this.walletAddressCache.set(walletId, wallet.address);
+
+      return wallet.address;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get address for wallet ${walletId}: ${error.message}`,
+      );
+      return '';
+    }
   }
 }

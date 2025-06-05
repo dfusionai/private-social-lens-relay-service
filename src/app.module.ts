@@ -21,6 +21,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -85,6 +86,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     HomeModule,
     BlockchainModule,
     RelayModule,
+    MonitoringModule,
   ],
 })
 export class AppModule {}

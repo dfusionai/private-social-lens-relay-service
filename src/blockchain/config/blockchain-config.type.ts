@@ -37,9 +37,26 @@ export type GasConfig = {
   retryDelayMs: number;
 };
 
+export type WalletMonitoringConfig = {
+  defaultThreshold: string;
+  operationsEmail: string;
+};
+
+export type TransactionMonitoringConfig = {
+  highGasThreshold: number;
+  failureCountThreshold: number;
+  checkPeriodHours: number;
+};
+
+export type MonitoringConfig = {
+  wallet: WalletMonitoringConfig;
+  transaction: TransactionMonitoringConfig;
+};
+
 export type BlockchainModuleConfig = {
   blockchain: BlockchainConfig;
   wallet: WalletConfig;
   contracts: ContractsConfig;
   gas: GasConfig;
+  monitoring: MonitoringConfig;
 };

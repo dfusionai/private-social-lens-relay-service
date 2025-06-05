@@ -30,8 +30,6 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   },
 });
 
-import { TasksModule } from './tasks/tasks.module';
-
 import { ApiKeysModule } from './api-keys/api-keys.module';
 
 import { TransactionsModule } from './transactions/transactions.module';
@@ -40,7 +38,6 @@ import { TransactionsModule } from './transactions/transactions.module';
   imports: [
     TransactionsModule,
     ApiKeysModule,
-    TasksModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [

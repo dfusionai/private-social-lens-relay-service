@@ -58,7 +58,10 @@ import { TransactionsModule } from './transactions/transactions.module';
         fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', {
           infer: true,
         }),
-        loaderOptions: { path: path.join(__dirname, '/i18n/'), watch: true },
+        loaderOptions: {
+          path: path.join(__dirname, '/i18n/'),
+          watch: configService.get('app.i18nWatchFiles', { infer: true }),
+        },
       }),
       resolvers: [
         {

@@ -120,7 +120,7 @@ export class TeePoolController {
       // Return standardized response
       return {
         transactionHash,
-        status: transaction.transactionState,
+        status: TransactionStatus.SUCCESS,
         timestamp: transaction.createdAt.toISOString(),
         metadata: transaction.metadata,
       };

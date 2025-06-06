@@ -120,13 +120,9 @@ export class DataRegistryController {
         transactionState: TransactionStatus.SUCCESS,
       });
 
-      this.logger.log(
-        `Transaction ${transaction.id} ${transactionHash} ${transaction.transactionState}`,
-      );
-
       return {
         transactionHash,
-        status: transaction.transactionState,
+        status: TransactionStatus.SUCCESS,
         timestamp: transaction.createdAt.toISOString(),
         metadata: transaction.metadata,
       };

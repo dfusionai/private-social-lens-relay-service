@@ -117,7 +117,7 @@ export class DlpController {
 
       return {
         transactionHash: transactionHash,
-        status: transaction.transactionState,
+        status: TransactionStatus.SUCCESS,
         timestamp: transaction.createdAt.toISOString(),
         metadata: transaction.metadata,
       };

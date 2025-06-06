@@ -70,7 +70,9 @@ export class TransactionService {
 
     try {
       const { walletId, wallet } = walletInfo;
-      this.logger.log(`Using wallet ${walletId} for transaction`);
+      this.logger.log(
+        `Using wallet ${walletId} ${wallet.address} for transaction`,
+      );
 
       const config = this.configService.get<BlockchainModuleConfig>(
         'blockchain',
@@ -500,7 +502,7 @@ export class TransactionService {
       }
 
       // Wait for confirmation
-      const receipt = await tx.wait(3);
+      const receipt = await tx.wait(1);
 
       // Remove from pending transactions
       this.pendingTransactions.delete(txHash);

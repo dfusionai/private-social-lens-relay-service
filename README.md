@@ -1,285 +1,379 @@
+# private-social-lens-relay-service
+
 # Vana Relay Service
 
-A NestJS-based relay service for Vana blockchain operations, user authentication, and social features.
+---
+
+A **NestJS**-based relay service for Vana blockchain operations, user authentication, and social features.
+
+---
 
 ## Prerequisites
 
-- **Node.js**: >=16.0.0 
-- **NPM**: >=8.0.0
-- **Docker**: >=20.0.0
-- **Docker Compose**: >=2.0.0
-- **PostgreSQL**: 17.4+ (if running without Docker)
+Before you begin, ensure you have the following installed:
+
+* **Node.js**: `>=16.0.0`
+* **NPM**: `>=8.0.0`
+* **Docker**: `>=20.0.0`
+* **Docker Compose**: `>=2.0.0`
+* **PostgreSQL**: `17.4+` (only if running without Docker)
+
+---
 
 ## Quick Start
 
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd vana-relay-service
-```
+1.  **Clone the repository:**
 
-### 2. Environment Configuration
-```bash
-# Copy environment template
-cp env-example-relational .env
+    ```bash
+    git clone <repository-url>
+    cd vana-relay-service
+    ```
 
-# Edit the .env file with your configuration
-# Important: Update the following variables:
-# - API_KEY_SECRET (required for API key signing)
-# - BLOCKCHAIN_PROVIDER (your Infura/Alchemy endpoint)
-# - WALLET_PRIVATE_KEY (your wallet private key)
-# - WALLET_ENCRYPTION_KEY (for wallet encryption)
-# - CONTRACT_* addresses (smart contract addresses)
-```
+2.  **Environment Configuration:**
+
+    ```bash
+    # Copy environment template
+    cp env-example-relational .env
+    ```
+
+    Now, open the newly created `.env` file and **edit it with your specific configurations**.
+
+    **Important:** Make sure to update the following variables:
+
+    * `API_KEY_SECRET` (required for API key signing)
+    * `BLOCKCHAIN_PROVIDER` (your Infura/Alchemy endpoint)
+    * `WALLET_PRIVATE_KEY` (your wallet private key)
+    * `WALLET_ENCRYPTION_KEY` (for wallet encryption)
+    * `CONTRACT_*` addresses (smart contract addresses)
+
+---
 
 ## Development Setup
 
+You have two main options for setting up your development environment:
+
 ### Option 1: Local Development
 
-#### Install dependencies
-```bash
-npm ci
-```
+1.  **Install dependencies:**
 
-#### Setup PostgreSQL Database
-```bash
-# Option A: Using Docker for database only
-docker run --name postgres-vana \
-  -e POSTGRES_USER=root \
-  -e POSTGRES_PASSWORD=secret \
-  -e POSTGRES_DB=api \
-  -p 5432:5432 \
-  -d postgres:17.4-alpine
+    ```bash
+    npm ci
+    ```
 
-# Option B: Install PostgreSQL locally
-# Follow PostgreSQL installation guide for your OS
-```
+2.  **Setup PostgreSQL Database:**
 
-#### Run database migrations
-```bash
-npm run migration:run
-```
+    * **Option A: Using Docker for database only**
 
-#### Seed the database
-```bash
-npm run seed:run:relational
-```
+        ```bash
+        docker run --name postgres-vana \
+          -e POSTGRES_USER=root \
+          -e POSTGRES_PASSWORD=secret \
+          -e POSTGRES_DB=api \
+          -p 5432:5432 \
+          -d postgres:17.4-alpine
+        ```
 
-#### Start development server
-```bash
-# Regular development mode
-npm run start:dev
+    * **Option B: Install PostgreSQL locally**
+        Follow the PostgreSQL installation guide for your operating system.
 
-# Development with SWC (faster compilation)
-npm run start:swc
+3.  **Run database migrations:**
 
-# Debug mode
-npm run start:debug
-```
+    ```bash
+    npm run migration:run
+    ```
 
-The service will be available at:
-- **API**: http://localhost:3000
-- **Swagger Documentation**: http://localhost:3000/docs
+4.  **Seed the database:**
+
+    ```bash
+    npm run seed:run:relational
+    ```
+
+5.  **Start development server:**
+
+    * **Regular development mode:**
+        ```bash
+        npm run start:dev
+        ```
+    * **Development with SWC (faster compilation):**
+        ```bash
+        npm run start:swc
+        ```
+    * **Debug mode:**
+        ```bash
+        npm run start:debug
+        ```
+
+    The service will be available at:
+
+    * **API**: `http://localhost:3000`
+    * **Swagger Documentation**: `http://localhost:3000/docs`
+
+---
 
 ### Option 2: Docker Development
 
-#### Start all services
-```bash
-# Make sure .env file exists
-cp env-example-relational .env
+1.  **Start all services:**
 
-# Start services in detached mode
-docker-compose up -d
+    ```bash
+    # Make sure .env file exists
+    cp env-example-relational .env
 
-# Or start with logs
-docker-compose up
-```
+    # Start services in detached mode
+    docker-compose up -d
 
-#### View logs
-```bash
-# All services
-docker-compose logs -f
+    # Or start with logs
+    docker-compose up
+    ```
 
-# Specific service
-docker-compose logs -f api
-docker-compose logs -f postgres
-```
+2.  **View logs:**
 
-#### Stop services
-```bash
-docker-compose down
+    * **All services:**
+        ```bash
+        docker-compose logs -f
+        ```
+    * **Specific service:**
+        ```bash
+        docker-compose logs -f api
+        docker-compose logs -f postgres
+        ```
 
-# Remove volumes (delete database data)
-docker-compose down -v
-```
+3.  **Stop services:**
+
+    ```bash
+    docker-compose down
+
+    # Remove volumes (this will delete database data)
+    docker-compose down -v
+    ```
+
+---
 
 ## Production Deployment
 
 ### Using Docker Compose
 
-#### 1. Prepare environment
-```bash
-# Copy and configure production environment
-cp env-example-relational .env.production
+1.  **Prepare environment:**
 
-# Edit .env.production with production values
-# Important production configurations:
-# - NODE_ENV=production
-# - Strong passwords and secrets
-# - Proper database configuration
-# - SSL/TLS settings
-# - Real blockchain provider URLs
-```
+    ```bash
+    # Copy and configure production environment
+    cp env-example-relational .env.production
+    ```
 
-#### 2. Deploy
-```bash
-# Build and start production services
-docker-compose --env-file .env.production up -d --build
-```
+    Edit `.env.production` with your production values.
+
+    **Important production configurations:**
+
+    * `NODE_ENV=production`
+    * Strong passwords and secrets for all sensitive variables.
+    * Proper database configuration.
+    * SSL/TLS settings.
+    * Real blockchain provider URLs.
+
+2.  **Deploy:**
+
+    ```bash
+    # Build and start production services
+    docker-compose --env-file .env.production up -d --build
+    ```
+
+---
 
 ### Using Individual Docker Commands
 
-#### Build the image
-```bash
-docker build -t vana-relay-service .
-```
+1.  **Build the image:**
 
-#### Run with external database
-```bash
-docker run -d \
-  --name vana-relay-api \
-  --env-file .env.production \
-  -p 3000:3000 \
-  vana-relay-service
-```
+    ```bash
+    docker build -t vana-relay-service .
+    ```
 
-### Health Checks
+2.  **Run with external database:**
 
-Check if services are running:
-```bash
-# API health
-curl http://localhost:3000/api
+    ```bash
+    docker run -d \
+      --name vana-relay-api \
+      --env-file .env.production \
+      -p 3000:3000 \
+      vana-relay-service
+    ```
 
-# Database connection
-docker-compose exec api npm run migration:run --dry-run
-```
+---
+
+## Health Checks
+
+You can check the health of your services using the following commands:
+
+* **API health:**
+
+    ```bash
+    curl http://localhost:3000/api
+    ```
+
+* **Database connection:**
+
+    ```bash
+    docker-compose exec api npm run migration:run --dry-run
+    ```
+
+---
 
 ## Available Services
 
 When using Docker Compose, the following services will be available:
 
-- **API Service**: http://localhost:3000
-- **Swagger Documentation**: http://localhost:3000/docs  
-- **PostgreSQL Database**: localhost:5432
-- **Adminer (Database GUI)**: http://localhost:8080
-- **MailDev (Email testing)**: http://localhost:1080
+* **API Service**: `http://localhost:3000`
+* **Swagger Documentation**: `http://localhost:3000/docs`
+* **PostgreSQL Database**: `localhost:5432`
+* **Adminer (Database GUI)**: `http://localhost:8080`
+* **MailDev (Email testing)**: `http://localhost:1080`
+
+---
 
 ## Testing
 
 ### Unit Tests
-```bash
-# Run tests
-npm run test
 
-# Watch mode
-npm run test:watch
+* **Run tests:**
 
-# Coverage
-npm run test:cov
-```
+    ```bash
+    npm run test
+    ```
+
+* **Watch mode:**
+
+    ```bash
+    npm run test:watch
+    ```
+
+* **Coverage:**
+
+    ```bash
+    npm run test:cov
+    ```
+
+---
 
 ### End-to-End Tests
-```bash
-# Local E2E tests
-npm run test:e2e
 
-# Docker E2E tests
-npm run test:e2e:relational:docker
-```
+* **Local E2E tests:**
+
+    ```bash
+    npm run test:e2e
+    ```
+
+* **Docker E2E tests:**
+
+    ```bash
+    npm run test:e2e:relational:docker
+    ```
+
+---
 
 ## Database Management
 
 ### Migrations
-```bash
-# Generate migration
-npm run migration:generate -- src/database/migrations/MigrationName
 
-# Run migrations
-npm run migration:run
+* **Generate migration:**
 
-# Revert last migration
-npm run migration:revert
-```
+    ```bash
+    npm run migration:generate -- src/database/migrations/MigrationName
+    ```
+
+* **Run migrations:**
+
+    ```bash
+    npm run migration:run
+    ```
+
+* **Revert last migration:**
+
+    ```bash
+    npm run migration:revert
+    ```
+
+---
 
 ### Seeds
-```bash
-# Run seeds
-npm run seed:run:relational
 
-# Create new seed
-npm run seed:create:relational
-```
+* **Run seeds:**
+
+    ```bash
+    npm run seed:run:relational
+    ```
+
+* **Create new seed:**
+
+    ```bash
+    npm run seed:create:relational
+    ```
+
+---
 
 ## Troubleshooting
 
 ### Common Issues
 
-#### Port already in use
-```bash
-# Find process using port 3000
-lsof -i :3000
+* **Port already in use:**
 
-# Kill process
-kill -9 <PID>
-```
+    ```bash
+    # Find process using port 3000
+    lsof -i :3000
 
-#### Database connection issues
-```bash
-# Check if PostgreSQL is running
-docker-compose ps postgres
+    # Kill process (replace <PID> with the process ID)
+    kill -9 <PID>
+    ```
 
-# Restart database
-docker-compose restart postgres
+* **Database connection issues:**
 
-# Check database logs
-docker-compose logs postgres
-```
+    ```bash
+    # Check if PostgreSQL is running
+    docker-compose ps postgres
 
-#### Permission issues
-```bash
-# Fix file permissions
-chmod +x wait-for-it.sh
-chmod +x startup.relational.dev.sh
-```
+    # Restart database
+    docker-compose restart postgres
 
-#### Environment variables not loaded
-```bash
-# Verify .env file exists
-ls -la .env*
+    # Check database logs
+    docker-compose logs postgres
+    ```
 
-# Check environment variables in container
-docker-compose exec api env | grep DATABASE
-```
+* **Permission issues:**
+
+    ```bash
+    # Fix file permissions
+    chmod +x wait-for-it.sh
+    chmod +x startup.relational.dev.sh
+    ```
+
+* **Environment variables not loaded:**
+
+    ```bash
+    # Verify .env file exists
+    ls -la .env*
+
+    # Check environment variables in container
+    docker-compose exec api env | grep DATABASE
+    ```
+
+---
 
 ## Security Considerations
 
 ### For Production:
 
-1. **Strong Secrets**: Use strong, unique values for all `*_SECRET` variables
-2. **Database Security**: Use strong database passwords and restrict access
-3. **Environment Variables**: Never commit `.env` files to version control
-4. **SSL/TLS**: Configure HTTPS in production
-5. **Network Security**: Use proper firewall rules
-6. **Wallet Security**: Secure private key management
+* **Strong Secrets**: Use strong, unique values for all `*_SECRET` variables.
+* **Database Security**: Use strong database passwords and restrict access.
+* **Environment Variables**: **Never commit `.env` files to version control.**
+* **SSL/TLS**: Configure HTTPS in production.
+* **Network Security**: Use proper firewall rules.
+* **Wallet Security**: Implement secure private key management.
+
+---
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch  
-5. Create a Pull Request
+We welcome contributions! To contribute:
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1.  Fork the repository.
+2.  Create your feature branch.
+3.  Commit your changes.
+4.  Push to the branch.
+5.  Create a Pull Request.

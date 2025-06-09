@@ -70,7 +70,9 @@ export class TransactionService {
 
     try {
       const { walletId, wallet } = walletInfo;
-      this.logger.log(`Using wallet ${walletId} for transaction`);
+      this.logger.log(
+        `Using wallet ${walletId} ${wallet.address} for transaction`,
+      );
 
       const config = this.configService.get<BlockchainModuleConfig>(
         'blockchain',

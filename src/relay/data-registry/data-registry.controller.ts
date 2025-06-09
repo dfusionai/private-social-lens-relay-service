@@ -5,6 +5,7 @@ import {
   HttpStatus,
   HttpException,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { DataRegistryContractService } from '../../blockchain/contracts/services';
@@ -23,6 +24,8 @@ import { ApiKeyGuard } from '../../auth/api-key.guard';
   required: true,
 })
 export class DataRegistryController {
+  private readonly logger = new Logger(DataRegistryController.name);
+
   constructor(
     private readonly dataRegistryContractService: DataRegistryContractService,
     private readonly transactionService: TransactionsService,
@@ -119,7 +122,7 @@ export class DataRegistryController {
 
       return {
         transactionHash,
-        status: transaction.transactionState,
+        status: TransactionStatus.SUCCESS,
         timestamp: transaction.createdAt.toISOString(),
         metadata: transaction.metadata,
       };

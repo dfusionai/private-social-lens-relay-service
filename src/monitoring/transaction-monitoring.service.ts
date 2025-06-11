@@ -280,7 +280,7 @@ export class TransactionMonitoringService {
         subject: `[ALERT] Transaction Anomaly Detected - ${anomalyType}`,
         templatePath: path.join(
           __dirname,
-          '../mail/templates/transaction-anomaly-alert.hbs',
+          '../mail/mail-templates/transaction-anomaly-alert.hbs',
         ),
         context: {
           anomalyType,
@@ -311,7 +311,7 @@ export class TransactionMonitoringService {
         subject: '[ALERT] Transaction Monitoring Error',
         templatePath: path.join(
           __dirname,
-          '../mail/templates/monitoring-error-alert.hbs',
+          '../mail/mail-templates/monitoring-error-alert.hbs',
         ),
         context: {
           errorMessage,

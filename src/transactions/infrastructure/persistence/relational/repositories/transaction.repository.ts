@@ -31,6 +31,9 @@ export class TransactionRelationalRepository implements TransactionRepository {
     const entities = await this.transactionRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return entities.map((entity) => TransactionMapper.toDomain(entity));

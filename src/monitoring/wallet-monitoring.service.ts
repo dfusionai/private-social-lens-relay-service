@@ -173,7 +173,7 @@ export class WalletMonitoringService {
         subject: `[ALERT] Low Wallet Balance - ${walletId}`,
         templatePath: path.join(
           __dirname,
-          '../mail/templates/low-balance-alert.hbs',
+          '../mail/mail-templates/low-balance-alert.hbs',
         ),
         context: {
           walletId,
@@ -202,7 +202,7 @@ export class WalletMonitoringService {
         subject: '[ALERT] Wallet Monitoring Error',
         templatePath: path.join(
           __dirname,
-          '../mail/templates/monitoring-error-alert.hbs',
+          '../mail/mail-templates/monitoring-error-alert.hbs',
         ),
         context: {
           errorMessage,

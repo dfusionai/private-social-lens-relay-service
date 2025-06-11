@@ -9,7 +9,7 @@ import path from 'path';
 import { BlockchainModuleConfig } from '../blockchain/config/blockchain-config.type';
 
 interface WalletBalanceThreshold {
-  threshold: string; // ETH value in string (e.g., "0.1")
+  threshold: string; // VANA value in string (e.g., "0.1")
   alertEmail: string;
 }
 
@@ -59,7 +59,7 @@ export class WalletMonitoringService {
       this.operationsEmail =
         this.configService.get('mail.defaultEmail', { infer: true }) ||
         'operations@example.com';
-      this.defaultThreshold = '0.1'; // Default 0.1 ETH
+      this.defaultThreshold = '0.1'; // Default 0.1 VANA
       this.logger.log('Using default wallet monitoring configuration');
     }
   }
@@ -68,7 +68,7 @@ export class WalletMonitoringService {
    * Set a balance threshold for a specific wallet
    *
    * @param walletId The wallet ID
-   * @param threshold The threshold in ETH
+   * @param threshold The threshold in VANA
    * @param alertEmail Email to notify
    */
   setBalanceThreshold(
@@ -81,7 +81,7 @@ export class WalletMonitoringService {
       alertEmail: alertEmail || this.operationsEmail,
     };
     this.logger.log(
-      `Set balance threshold for wallet ${walletId} to ${threshold} ETH`,
+      `Set balance threshold for wallet ${walletId} to ${threshold} VANA`,
     );
   }
 
@@ -126,7 +126,7 @@ export class WalletMonitoringService {
       const balance = await wallet.getBalance();
       const balanceInEth = ethers.utils.formatEther(balance);
 
-      this.logger.log(`Wallet ${walletId} balance: ${balanceInEth} ETH`);
+      this.logger.log(`Wallet ${walletId} balance: ${balanceInEth} VANA`);
 
       // Get threshold for this wallet, or use default
       const walletThreshold = this.balanceThresholds[walletId] || {
@@ -137,7 +137,7 @@ export class WalletMonitoringService {
       // Check if balance is below threshold
       if (parseFloat(balanceInEth) < parseFloat(walletThreshold.threshold)) {
         this.logger.warn(
-          `Wallet ${walletId} balance (${balanceInEth} ETH) is below threshold (${walletThreshold.threshold} ETH)`,
+          `Wallet ${walletId} balance (${balanceInEth} VANA) is below threshold (${walletThreshold.threshold} VANA)`,
         );
 
         // Send alert email

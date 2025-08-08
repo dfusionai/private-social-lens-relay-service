@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient } from '@mysten/sui/client';
+import { fromHex } from '@mysten/sui/utils';
 import { SuiWalletService } from './sui.wallet.service';
 import { SuiModuleConfig } from './config/sui-config.type';
 
@@ -11,6 +12,10 @@ interface SendMoveCallParams {
   function: string;
   typeArguments?: string[];
   arguments?: any[];
+}
+
+interface IFileMetadata {
+  [key: string]: any;
 }
 
 @Injectable()
@@ -102,5 +107,75 @@ export class SuiTransactionService {
     const policyObjectId = created[0]?.reference?.objectId || null;
     if (!digest) throw new Error('Failed to get transaction digest');
     return { digest, policyObjectId };
+  }
+
+  async saveEncryptedFileOnchain(
+    fileId: string,
+    policyObjId: string,
+    metadata: IFileMetadata,
+  ): Promise<string> {
+    const keypair = this.walletService.getKeypair();
+    if (!keypair) {
+      this.logger.warn('Sui keypair is not configured');
+      return '';
+    }
+
+    try {
+      this.logger.log('Saving encrypted file onchain');
+      const sender = keypair.getPublicKey().toSuiAddress();
+      const tx = new Transaction();
+      tx.setSender(sender);
+
+      const metadataBytes = new Uint8Array(
+        new TextEncoder().encode(JSON.stringify(metadata)),
+      );
+
+      tx.moveCall({
+        target: `${this.getSuiPackageId()}::seal_manager::save_encrypted_file`,
+        arguments: [
+          tx.pure.vector('u8', fromHex(fileId)),
+          tx.object(policyObjId),
+          tx.pure.vector('u8', metadataBytes),
+        ],
+      });
+
+      tx.setGasBudget(this.gasBudget);
+
+      const result = await this.client.signAndExecuteTransaction({
+        transaction: tx,
+        signer: keypair,
+        requestType: 'WaitForLocalExecution',
+        options: {
+          showEffects: true,
+        },
+      } as any);
+
+      const onChainFileObjId =
+        (result as any).effects?.created?.[0]?.reference?.objectId || '';
+
+      if (!onChainFileObjId) {
+        throw new Error(
+          'Failed to save encrypted file onchain. Please try again.',
+        );
+      }
+
+      this.logger.log(`Encrypted file saved onchain: ${onChainFileObjId}`);
+      return onChainFileObjId;
+    } catch (err) {
+      this.logger.error('Failed to save encrypted file onchain', err);
+      throw new Error(
+        'Failed to save encrypted file onchain. Please try again.',
+      );
+    }
+  }
+
+  private getSuiPackageId(): string {
+    const config = this.configService.get<SuiModuleConfig>('sui', {
+      infer: true,
+    });
+    if (!config?.packageId) {
+      throw new Error('Sui package ID not configured');
+    }
+    return config.packageId;
   }
 }

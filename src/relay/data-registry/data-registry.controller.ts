@@ -15,7 +15,7 @@ import { TransactionsService } from '../../transactions/transactions.service';
 import { TransactionStatus } from '../../transactions/domain/transaction.status';
 import { ApiKeyGuard } from '../../auth/api-key.guard';
 
-@ApiTags('Data Registry')
+@ApiTags('Vana Relay')
 @Controller('relay/data-registry')
 @UseGuards(ApiKeyGuard)
 @ApiHeader({

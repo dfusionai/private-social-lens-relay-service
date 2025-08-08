@@ -1,35 +1,39 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SuiTransactionService } from '../../blockchain/sui/sui.transaction.service';
-// import { ApiKeyGuard } from '../../auth/api-key.guard';
-import { MoveCallDto } from './dto/move-call.dto';
-import { MoveCallResponseDto } from './dto/move-call-response.dto';
+import { ApiKeyGuard } from '../../auth/api-key.guard';
 import {
   CreatePolicyDto,
   CreatePolicyResponseDto,
 } from './dto/create-policy.dto';
+import {
+  SaveEncryptedFileDto,
+  SaveEncryptedFileResponseDto,
+} from './dto/save-encrypted-file.dto';
 
-@ApiTags('sui-relay')
+@ApiTags('Sui Relay')
 @Controller('relay/sui')
-// @UseGuards(ApiKeyGuard)
-// @ApiHeader({
-//   name: 'x-api-key',
-//   required: true,
-//   description: 'API Key for authentication',
-// })
+@UseGuards(ApiKeyGuard)
+@ApiHeader({
+  name: 'x-api-key',
+  required: true,
+  description: 'API Key for authentication',
+})
 export class SuiRelayController {
   constructor(private readonly suiTx: SuiTransactionService) {}
-
-  @Post('move-call')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Relay a Sui Move call transaction' })
-  @ApiBody({ type: MoveCallDto })
-  @ApiOkResponse({ type: MoveCallResponseDto })
-  async moveCall(@Body() dto: MoveCallDto) {
-    const digest = await this.suiTx.sendMoveCall(dto);
-    const response: MoveCallResponseDto = { digest };
-    return response;
-  }
 
   @Post('create-policy')
   @HttpCode(HttpStatus.OK)
@@ -44,5 +48,22 @@ export class SuiRelayController {
       dto.dlpWalletAddress,
     );
     return { digest, policyObjectId } as CreatePolicyResponseDto;
+  }
+
+  @Post('save-encrypted-file')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Save encrypted file onchain via seal_manager::save_encrypted_file',
+  })
+  @ApiBody({ type: SaveEncryptedFileDto })
+  @ApiOkResponse({ type: SaveEncryptedFileResponseDto })
+  async saveEncryptedFile(@Body() dto: SaveEncryptedFileDto) {
+    const onChainFileObjId = await this.suiTx.saveEncryptedFileOnchain(
+      dto.fileId,
+      dto.policyObjId,
+      dto.metadata,
+    );
+    return { onChainFileObjId } as SaveEncryptedFileResponseDto;
   }
 }

@@ -7,4 +7,5 @@ export interface SuiModuleConfig {
     privateKeyEnvVar: string;
     gasBudget: number;
   };
+  packageId?: string;
 }

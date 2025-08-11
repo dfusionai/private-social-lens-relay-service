@@ -33,6 +33,10 @@ class SuiEnvironmentVariablesValidator {
   @IsPositive()
   @IsOptional()
   SUI_GAS_BUDGET: number;
+
+  @IsString()
+  @IsOptional()
+  SUI_PACKAGE_ID: string;
 }
 
 export default registerAs<SuiModuleConfig>('sui', () => {
@@ -49,5 +53,6 @@ export default registerAs<SuiModuleConfig>('sui', () => {
         process.env.SUI_WALLET_PRIVATE_KEY_ENV_VAR || 'SUI_WALLET_PRIVATE_KEY',
       gasBudget: Number(process.env.SUI_GAS_BUDGET) || 1_000_000_000,
     },
+    packageId: process.env.SUI_PACKAGE_ID,
   };
 });

@@ -40,6 +40,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.758.0",
     "@aws-sdk/s3-request-presigner": "3.758.0",
+    "@mysten/bcs": "^1.0.4",
+    "@mysten/sui": "^1.14.0",
     "@nestjs/common": "11.0.20",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.20",
@@ -51,6 +53,7 @@
     "@nestjs/typeorm": "11.0.0",
     "@types/multer-s3": "3.0.3",
     "bcryptjs": "3.0.2",
+    "bech32": "^2.0.0",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
     "crypto": "^1.0.1",

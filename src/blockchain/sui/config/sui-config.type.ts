@@ -8,4 +8,5 @@ export interface SuiModuleConfig {
     gasBudget: number;
   };
   packageId?: string;
+  walrus_relay_url?: string;
 }

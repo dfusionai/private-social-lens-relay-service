@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { fromBase64 } from '@mysten/sui/utils';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { SuiClient } from '@mysten/sui/client';
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { bech32 } from 'bech32';
 import { SuiModuleConfig } from './config/sui-config.type';
 
@@ -18,7 +18,11 @@ export class SuiWalletService {
     });
     if (!config) throw new Error('Sui configuration not found');
 
-    this.client = new SuiClient({ url: config.client.url });
+    // this.client = new SuiClient({ url: config.client.url });
+    this.client = new SuiClient({
+      url: getFullnodeUrl(config.client.network),
+      network: config.client.network,
+    });
 
     const pkEnvVar = config.wallet.privateKeyEnvVar;
     const pk = process.env[pkEnvVar];

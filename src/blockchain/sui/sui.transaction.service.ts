@@ -89,7 +89,7 @@ export class SuiTransactionService {
 
     tx.moveCall({
       target: `${packageObjectId}::seal_manager::create_access_policy`,
-      arguments: [tx.pure.vector('address', [sender, dlpWalletAddress])],
+      arguments: [tx.pure.vector('address', [dlpWalletAddress])],
     });
 
     tx.setGasBudget(this.gasBudget);

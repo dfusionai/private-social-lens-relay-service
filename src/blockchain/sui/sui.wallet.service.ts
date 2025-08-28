@@ -19,10 +19,10 @@ export class SuiWalletService {
     if (!config) throw new Error('Sui configuration not found');
 
     // this.client = new SuiClient({ url: config.client.url });
-    this.client = new SuiClient({ 
+    this.client = new SuiClient({
       url: getFullnodeUrl(config.client.network),
       network: config.client.network,
-     });
+    });
 
     const pkEnvVar = config.wallet.privateKeyEnvVar;
     const pk = process.env[pkEnvVar];

@@ -32,6 +32,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 });
 
 import { ApiKeysModule } from './api-keys/api-keys.module';
+import { NautilusModule } from './nautilus/nautilus.module';
 
 import { TransactionsModule } from './transactions/transactions.module';
 
@@ -89,6 +90,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     BlockchainModule,
     RelayModule,
     MonitoringModule,
+    NautilusModule,
   ],
 })
 export class AppModule {}

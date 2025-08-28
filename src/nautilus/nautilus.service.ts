@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { EncryptRequest, EncryptResponse } from './interfaces/nautilus.interface';
+import {
+  EncryptRequest,
+  EncryptResponse,
+} from './interfaces/nautilus.interface';
 import { NautilusConfig } from './config/nautilus-config.type';
 
 @Injectable()
@@ -27,9 +30,9 @@ export class NautilusService {
   async encryptData(data: string): Promise<EncryptResponse> {
     try {
       this.logger.debug(`Encrypting data (${data.length} characters)`);
-      
+
       const request: EncryptRequest = { data };
-      
+
       const response = await firstValueFrom(
         this.httpService.post<EncryptResponse>(
           `${this.config.url}/encrypt`,
@@ -41,16 +44,16 @@ export class NautilusService {
           },
         ),
       );
-      
+
       this.logger.debug(`Successfully encrypted data`);
       return response.data;
     } catch (error) {
       this.logger.error('Failed to encrypt data:', error);
-      
+
       // Extract detailed error information
       const errorData = error?.response?.data || {};
       const errorMessage = errorData?.message || error.message;
-      
+
       throw new Error(`Encryption failed: ${errorMessage}`);
     }
   }

@@ -37,6 +37,10 @@ class SuiEnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   SUI_PACKAGE_ID: string;
+
+  @IsString()
+  @IsOptional()
+  SUI_WALRUS_RELAY_URL: string;
 }
 
 export default registerAs<SuiModuleConfig>('sui', () => {
@@ -54,5 +58,6 @@ export default registerAs<SuiModuleConfig>('sui', () => {
       gasBudget: Number(process.env.SUI_GAS_BUDGET) || 1_000_000_000,
     },
     packageId: process.env.SUI_PACKAGE_ID,
+    walrus_relay_url: process.env.SUI_WALRUS_RELAY_URL,
   };
 });

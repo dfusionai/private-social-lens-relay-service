@@ -1,14 +1,20 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import {
-  ApiBody,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
   ApiHeader,
   ApiOkResponse,
   ApiOperation,
-  ApiTags
+  ApiTags,
 } from '@nestjs/swagger';
 import { ApiKeyGuard } from '../auth/api-key.guard';
+import { EncryptChatDto, EncryptChatResponseDto } from './dto';
 import { NautilusService } from './nautilus.service';
-import { EncryptResponse } from './interfaces/nautilus.interface';
 
 @ApiTags('Nautilus Relay')
 @Controller('relay/nautilus-tee')
@@ -24,11 +30,17 @@ export class NautilusController {
   @Post('encrypt')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Encrypt raw chat data',
+    summary: 'Encrypt raw chat data using Nautilus TEE',
+    description:
+      'Encrypts Telegram chat data using Nautilus Trusted Execution Environment for secure processing',
   })
-  @ApiBody({ type: String })
-  @ApiOkResponse({ type: EncryptResponse })
-  async encryptChats(@Body() body: { telegramChats: string }) {
+  @ApiOkResponse({
+    description: 'Successfully encrypted chat data',
+    type: EncryptChatResponseDto,
+  })
+  async encryptChats(
+    @Body() body: EncryptChatDto,
+  ): Promise<EncryptChatResponseDto> {
     try {
       const encryptedData = await this.nautilusService.encryptData(
         body.telegramChats,

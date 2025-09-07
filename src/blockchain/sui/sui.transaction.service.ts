@@ -87,9 +87,13 @@ export class SuiTransactionService {
     const tx = new Transaction();
     tx.setSender(sender);
 
+    if (dlpWalletAddress !== sender)
+      this.logger.error('dlpWalletAddress different to relay address');
+
     tx.moveCall({
       target: `${packageObjectId}::seal_manager::create_access_policy`,
-      arguments: [tx.pure.vector('address', [dlpWalletAddress])],
+      // arguments: [tx.pure.vector('address', [dlpWalletAddress])],
+      arguments: [tx.pure.vector('address', [sender])],
     });
 
     tx.setGasBudget(this.gasBudget);

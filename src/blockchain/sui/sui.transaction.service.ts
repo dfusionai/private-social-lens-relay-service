@@ -83,34 +83,45 @@ export class SuiTransactionService {
     const keypair = this.walletService.getKeypair();
     if (!keypair) throw new Error('Sui keypair is not configured');
 
-    const sender = keypair.getPublicKey().toSuiAddress();
-    const tx = new Transaction();
-    tx.setSender(sender);
+    try {
+      this.logger.log('Creating access policy');
+      const sender = keypair.getPublicKey().toSuiAddress();
+      const tx = new Transaction();
+      tx.setSender(sender);
 
-    if (dlpWalletAddress !== sender)
-      this.logger.error('dlpWalletAddress different to relay address');
+      if (dlpWalletAddress !== sender)
+        this.logger.error('dlpWalletAddress different to relay address');
 
-    tx.moveCall({
-      target: `${packageObjectId}::seal_manager::create_access_policy`,
-      // arguments: [tx.pure.vector('address', [dlpWalletAddress])],
-      arguments: [tx.pure.vector('address', [sender])],
-    });
+      tx.moveCall({
+        target: `${packageObjectId}::seal_manager::create_access_policy`,
+        // arguments: [tx.pure.vector('address', [dlpWalletAddress])],
+        arguments: [tx.pure.vector('address', [sender])],
+      });
 
-    tx.setGasBudget(this.gasBudget);
+      tx.setGasBudget(this.gasBudget);
 
-    const result = await this.client.signAndExecuteTransaction({
-      transaction: tx,
-      signer: keypair,
-      options: { showEffects: true },
-      requestType: 'WaitForLocalExecution',
-    } as any);
+      const result = await this.client.signAndExecuteTransaction({
+        transaction: tx,
+        signer: keypair,
+        options: { showEffects: true },
+        requestType: 'WaitForLocalExecution',
+      } as any);
 
-    const digest =
-      (result as any).digest || (result as any).effects?.transactionDigest;
-    const created = (result as any).effects?.created || [];
-    const policyObjectId = created[0]?.reference?.objectId || null;
-    if (!digest) throw new Error('Failed to get transaction digest');
-    return { digest, policyObjectId };
+      const digest =
+        (result as any).digest || (result as any).effects?.transactionDigest;
+      const created = (result as any).effects?.created || [];
+      const policyObjectId = created[0]?.reference?.objectId || null;
+
+      if (!digest) throw new Error('Failed to get transaction digest');
+
+      this.logger.log(
+        `Access policy created. ${policyObjectId}. Tx: ${digest}`,
+      );
+      return { digest, policyObjectId };
+    } catch (err) {
+      this.logger.error('Failed to create access policy', err);
+      throw new Error('Failed to create access policy. Please try again.');
+    }
   }
 
   async saveEncryptedFileOnchain(
@@ -163,7 +174,9 @@ export class SuiTransactionService {
         );
       }
 
-      this.logger.log(`Encrypted file saved onchain: ${onChainFileObjId}`);
+      this.logger.log(
+        `Encrypted file saved onchain: ${onChainFileObjId}. Tx: ${result.digest}`,
+      );
       return onChainFileObjId;
     } catch (err) {
       this.logger.error('Failed to save encrypted file onchain', err);

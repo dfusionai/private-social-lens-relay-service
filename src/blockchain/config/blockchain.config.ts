@@ -115,10 +115,10 @@ export default registerAs<BlockchainModuleConfig>('blockchain', () => {
     wallet: {
       privateKeyEnvVar:
         process.env.WALLET_PRIVATE_KEY_ENV_VAR || 'WALLET_PRIVATE_KEY',
-      gasLimit: Number(process.env.WALLET_GAS_LIMIT) || 3000000,
-      maxFeePerGas: process.env.WALLET_MAX_FEE_PER_GAS || '50000000000',
+      gasLimit: Number(process.env.WALLET_GAS_LIMIT) || 1000000,
+      maxFeePerGas: process.env.WALLET_MAX_FEE_PER_GAS || '4000000',
       maxPriorityFeePerGas:
-        process.env.WALLET_MAX_PRIORITY_FEE_PER_GAS || '1500000000',
+        process.env.WALLET_MAX_PRIORITY_FEE_PER_GAS || '4000000',
       pool: {
         enabled: process.env.WALLET_POOL_ENABLED === 'true',
         size: Number(process.env.WALLET_POOL_SIZE) || 5,

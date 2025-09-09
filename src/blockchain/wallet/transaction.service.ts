@@ -251,7 +251,7 @@ export class TransactionService {
       // Get fee data from the network
       const feeData = await this.provider.getFeeData();
 
-      if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
+      if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas || !feeData.gasPrice) {
         // Fallback to configuration values if network doesn't support EIP-1559
         return {
           maxFeePerGas: ethers.utils.parseUnits(
@@ -280,11 +280,11 @@ export class TransactionService {
       }
 
       // Calculate adjusted values
-      const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
+      const maxPriorityFeePerGas = feeData.gasPrice
         .mul(Math.floor(priorityMultiplier * 100))
         .div(100);
 
-      const maxFeePerGas = feeData.maxFeePerGas
+      const maxFeePerGas = feeData.gasPrice
         .mul(Math.floor(priorityMultiplier * 100))
         .div(100);
 
@@ -296,7 +296,7 @@ export class TransactionService {
 
       return {
         maxFeePerGas: maxFeePerGas.gt(maxGasPrice) ? maxGasPrice : maxFeePerGas,
-        maxPriorityFeePerGas,
+        maxPriorityFeePerGas: maxFeePerGas.gt(maxGasPrice) ? maxGasPrice : maxFeePerGas
       };
     } catch (error) {
       this.logger.error(`Error getting optimized gas price: ${error.message}`);

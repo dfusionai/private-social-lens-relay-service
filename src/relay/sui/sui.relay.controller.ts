@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -23,6 +24,7 @@ import {
   SaveEncryptedFileDto,
   SaveEncryptedFileResponseDto,
 } from './dto/save-encrypted-file.dto';
+import { ClientConfigDto } from './dto/client-config.dto';
 
 @ApiTags('Sui Relay')
 @Controller('relay/sui')
@@ -65,5 +67,12 @@ export class SuiRelayController {
       dto.metadata,
     );
     return { onChainFileObjId } as SaveEncryptedFileResponseDto;
+  }
+
+  @Get('client-config')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: ClientConfigDto })
+  getClientConfig() {
+    return this.suiTx.getClientConfig();
   }
 }

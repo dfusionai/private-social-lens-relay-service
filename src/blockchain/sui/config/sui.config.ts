@@ -59,5 +59,7 @@ export default registerAs<SuiModuleConfig>('sui', () => {
     },
     packageId: process.env.SUI_PACKAGE_ID,
     walrus_relay_url: process.env.SUI_WALRUS_RELAY_URL,
+    sealKeyServers: process.env.SUI_SEAL_KEY_SERVERS?.split(','),
+    policyObjectId: process.env.SUI_POLICY_OBJECT_ID,
   };
 });

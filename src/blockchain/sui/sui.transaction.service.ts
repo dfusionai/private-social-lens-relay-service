@@ -5,6 +5,7 @@ import { SuiClient } from '@mysten/sui/client';
 import { fromHex } from '@mysten/sui/utils';
 import { SuiWalletService } from './sui.wallet.service';
 import { SuiModuleConfig } from './config/sui-config.type';
+import { ClientConfigDto } from '../../relay/sui/dto/client-config.dto';
 
 interface SendMoveCallParams {
   packageObjectId: string;
@@ -194,5 +195,21 @@ export class SuiTransactionService {
       throw new Error('Sui package ID not configured');
     }
     return config.packageId;
+  }
+
+  getClientConfig(): ClientConfigDto {
+    const config = this.configService.get<SuiModuleConfig>('sui', {
+      infer: true,
+    });
+
+    if (!config?.packageId) {
+      throw new Error('Sui package ID not configured');
+    }
+
+    return {
+      keyServers: config.sealKeyServers,
+      movePackageId: config.packageId,
+      policyObjectId: config.policyObjectId,
+    };
   }
 }

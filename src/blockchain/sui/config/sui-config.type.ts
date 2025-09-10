@@ -9,4 +9,6 @@ export interface SuiModuleConfig {
   };
   packageId?: string;
   walrus_relay_url?: string;
+  sealKeyServers?: Array<string>;
+  policyObjectId?: string;
 }

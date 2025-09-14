@@ -20,6 +20,7 @@ import { ApiKeyGuard } from '../../auth/api-key.guard';
 import { WalrusService } from '../../blockchain/sui/walrus.relay.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  WalrusRelayUploadRequestDto,
   WalrusUploadRequestDto,
   WalrusUploadResponseDto,
 } from './dto/upload.dto';
@@ -55,6 +56,24 @@ export class WalrusRelayController {
         file,
         uploadDto,
       );
+    return result;
+  }
+
+  @Post('upload-file')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Upload encrypted chat data using Walrus relay' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: WalrusRelayUploadRequestDto })
+  @ApiOkResponse({
+    type: WalrusUploadResponseDto,
+    description: 'Result of Walrus upload via relay',
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFileViaRelay(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() uploadDto: WalrusRelayUploadRequestDto,
+  ) {
+    const result = await this.walrusService.walrusRelayUpload(file, uploadDto);
     return result;
   }
 }

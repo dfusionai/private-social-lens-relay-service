@@ -6,7 +6,10 @@ import {
 } from '@mysten/walrus';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WalrusUploadRequestDto } from '../../relay/walrus/dto/upload.dto';
+import {
+  WalrusRelayUploadRequestDto,
+  WalrusUploadRequestDto,
+} from '../../relay/walrus/dto/upload.dto';
 import { SuiModuleConfig } from './config/sui-config.type';
 import { SuiWalletService } from './sui.wallet.service';
 
@@ -169,4 +172,51 @@ export class WalrusService {
     }
   }
 
+  async walrusRelayUpload(
+    file: Express.Multer.File,
+    uploadDto: WalrusRelayUploadRequestDto,
+  ) {
+    try {
+      this.logger.log('Starting file upload process with validation');
+
+      const config = this.configService.get<SuiModuleConfig>('sui', {
+        infer: true,
+      });
+
+      if (uploadDto.movePackageId !== config?.packageId) {
+        throw new Error('Invalid package id.');
+      }
+
+      if (uploadDto.policyObjectId !== config?.policyObjectId) {
+        throw new Error('Invalid policy object id.');
+      }
+
+      const configKeyServers = config?.sealKeyServers;
+
+      if (uploadDto.keyServers.length !== configKeyServers.length) {
+        throw new Error(
+          'Invalid seal key servers: Mismatched number of servers.',
+        );
+      }
+      for (let i = 0; i < configKeyServers.length; i++) {
+        if (uploadDto.keyServers[i] !== configKeyServers[i]) {
+          throw new Error('Invalid seal key servers: Mismatched server URLs.');
+        }
+      }
+
+      throw new Error('VALIDATION PASSED');
+      return await this.uploadFileViaRelayWalrusWriteFilesFlowApi(
+        file,
+        uploadDto,
+      );
+    } catch (error) {
+      this.logger.error(
+        'Failed to upload file to Walrus via relay with validation.',
+        error,
+      );
+      throw new Error(
+        `Failed to upload file to Walrus via relay with validation: ${error.message}`,
+      );
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsArray, IsObject, IsString } from 'class-validator';
 
 export class WalrusUploadRequestDto {
   // @ApiProperty({
@@ -16,6 +17,42 @@ export class WalrusUploadRequestDto {
   })
   @IsString()
   epochs: string;
+}
+
+export class WalrusRelayUploadRequestDto {
+  @ApiProperty({
+    type: 'number',
+    example: 5,
+    description: 'Epochs to store the file',
+  })
+  @IsString()
+  epochs: string;
+
+  @ApiProperty({
+    type: 'string',
+    example: '',
+    description: 'Access policy object id',
+  })
+  @IsString()
+  policyObjectId: string;
+
+  @ApiProperty({
+    type: 'string',
+    example: '',
+    description: 'Sui move package module: seal manager object id',
+  })
+  @IsString()
+  movePackageId: string;
+
+  @ApiProperty({
+    type: 'array',
+    example: 5,
+    description: 'Seal key servers for encryption',
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => JSON.parse(value))
+  keyServers: string[];
 }
 
 export class WalrusUploadResponseDto {

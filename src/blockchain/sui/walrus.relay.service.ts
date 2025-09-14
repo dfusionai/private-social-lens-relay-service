@@ -204,7 +204,6 @@ export class WalrusService {
         }
       }
 
-      throw new Error('VALIDATION PASSED');
       return await this.uploadFileViaRelayWalrusWriteFilesFlowApi(
         file,
         uploadDto,

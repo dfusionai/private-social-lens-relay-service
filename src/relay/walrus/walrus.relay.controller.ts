@@ -36,29 +36,6 @@ import {
 export class WalrusRelayController {
   constructor(private readonly walrusService: WalrusService) {}
 
-  @Post('upload')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Upload encrypted chat data using Walrus relay' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: WalrusUploadRequestDto })
-  @ApiOkResponse({
-    type: WalrusUploadResponseDto,
-    description: 'Result of Walrus upload via relay',
-  })
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() uploadDto: WalrusUploadRequestDto,
-  ) {
-    // const result = await this.walrusService.uploadFileViaRelay(file, uploadDto);
-    const result =
-      await this.walrusService.uploadFileViaRelayWalrusWriteFilesFlowApi(
-        file,
-        uploadDto,
-      );
-    return result;
-  }
-
   @Post('upload-file')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Upload encrypted chat data using Walrus relay' })

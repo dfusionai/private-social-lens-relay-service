@@ -38,7 +38,7 @@ export class WalrusService {
       uploadRelay: {
         host: config.walrus_relay_url,
         sendTip: {
-          max: 6_000_000, // in MIST (1 SUI equals 1 billion MIST)
+          max: 8_000_000, // in MIST (1 SUI equals 1 billion MIST)
         },
       },
     });

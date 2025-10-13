@@ -4,7 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import {
   ApiHeader,
@@ -12,13 +12,13 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+// import { ApiKeyGuard } from '../auth/api-key.guard';
 import { EncryptChatDto, EncryptChatResponseDto } from './dto';
 import { NautilusService } from './nautilus.service';
 
 @ApiTags('Nautilus Relay')
 @Controller('relay/nautilus-tee')
-@UseGuards(ApiKeyGuard)
+// @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
   required: true,

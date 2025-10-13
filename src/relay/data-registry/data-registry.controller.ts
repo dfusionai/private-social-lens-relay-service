@@ -4,7 +4,7 @@ import {
   Body,
   HttpStatus,
   HttpException,
-  UseGuards,
+  // UseGuards,
   Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
@@ -13,11 +13,11 @@ import { AddFileDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
 import { TransactionsService } from '../../transactions/transactions.service';
 import { TransactionStatus } from '../../transactions/domain/transaction.status';
-import { ApiKeyGuard } from '../../auth/api-key.guard';
+// import { ApiKeyGuard } from '../../auth/api-key.guard';
 
 @ApiTags('Vana Relay')
 @Controller('relay/data-registry')
-@UseGuards(ApiKeyGuard)
+// @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key for authentication',

@@ -104,9 +104,6 @@ export class WalrusService {
       // Set the sender for the transaction
       registerTx.setSender(senderAddress);
 
-      // Add a small delay to avoid potential race conditions
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const { digest: registerDigest } = await signer.signAndExecuteTransaction(
         {
           transaction: registerTx,
@@ -121,9 +118,6 @@ export class WalrusService {
         options: { showEffects: true },
       });
 
-      // Additional delay to ensure state is fully synchronized
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       // Step 3: Upload file data to the relay
       this.logger.log('Uploading file data to relay');
       await flow.upload({ digest: registerDigest });
@@ -135,9 +129,6 @@ export class WalrusService {
 
       // Set the sender for the certification transaction
       certifyTx.setSender(senderAddress);
-
-      // Add a small delay before certification
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const { digest: certifyDigest } = await signer.signAndExecuteTransaction({
         transaction: certifyTx,
@@ -178,6 +169,8 @@ export class WalrusService {
   ) {
     try {
       this.logger.log('Starting file upload process with validation');
+
+      throw new Error('Temporary pause.');
 
       const config = this.configService.get<SuiModuleConfig>('sui', {
         infer: true,

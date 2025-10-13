@@ -31,7 +31,7 @@ import { FindAllApiKeysDto } from './dto/find-all-api-keys.dto';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
 import { RolesGuard } from '../roles/roles.guard';
-import { ApiKeyGuard } from '../auth/api-key.guard';
+// import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags('Apikeys')
 @ApiBearerAuth()
@@ -113,7 +113,7 @@ export class ApiKeysController {
   }
 
   @Get('validate')
-  @UseGuards(ApiKeyGuard)
+  // @UseGuards(ApiKeyGuard)
   @ApiHeader({
     name: 'x-api-key',
     description: 'API Key for authentication',

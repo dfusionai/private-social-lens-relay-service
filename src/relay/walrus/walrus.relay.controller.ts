@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Post,
   UploadedFile,
-  UseGuards,
+  // UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -16,18 +16,17 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiKeyGuard } from '../../auth/api-key.guard';
+// import { ApiKeyGuard } from '../../auth/api-key.guard';
 import { WalrusService } from '../../blockchain/sui/walrus.relay.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   WalrusRelayUploadRequestDto,
-  WalrusUploadRequestDto,
   WalrusUploadResponseDto,
 } from './dto/upload.dto';
 
 @ApiTags('Walrus Relay')
 @Controller('relay/walrus')
-@UseGuards(ApiKeyGuard)
+// @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
   required: true,

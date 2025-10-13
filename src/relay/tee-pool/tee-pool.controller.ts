@@ -4,7 +4,7 @@ import {
   Body,
   HttpStatus,
   HttpException,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { TeePoolContractService } from '../../blockchain/contracts/services';
@@ -12,11 +12,11 @@ import { RequestProofDto } from './dto';
 import { TransactionResponse } from '../common/interfaces';
 import { TransactionsService } from '../../transactions/transactions.service';
 import { TransactionStatus } from '../../transactions/domain/transaction.status';
-import { ApiKeyGuard } from '../../auth/api-key.guard';
+// import { ApiKeyGuard } from '../../auth/api-key.guard';
 
 @ApiTags('Vana Relay')
 @Controller('relay/tee-pool')
-@UseGuards(ApiKeyGuard)
+// @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
   description: 'API Key for authentication',

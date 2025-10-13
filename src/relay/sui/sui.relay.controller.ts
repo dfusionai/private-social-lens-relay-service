@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -15,7 +15,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SuiTransactionService } from '../../blockchain/sui/sui.transaction.service';
-import { ApiKeyGuard } from '../../auth/api-key.guard';
+// import { ApiKeyGuard } from '../../auth/api-key.guard';
 import {
   CreatePolicyDto,
   CreatePolicyResponseDto,
@@ -28,7 +28,7 @@ import { ClientConfigDto } from './dto/client-config.dto';
 
 @ApiTags('Sui Relay')
 @Controller('relay/sui')
-@UseGuards(ApiKeyGuard)
+// @UseGuards(ApiKeyGuard)
 @ApiHeader({
   name: 'x-api-key',
   required: true,

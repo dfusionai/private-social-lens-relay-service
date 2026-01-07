@@ -80,11 +80,11 @@ WALLET_POOL_ENABLED=true
 WALLET_POOL_SIZE=5
 WALLET_POOL_MAX_WAIT_MS=5000
 WALLET_POOL_MAX_ACQUISITION_TIME_MS=60000
-WALLET_POOL_PRIVATE_KEYS_ENV_PREFIX=WALLET_PRIVATE_KEY_
+WALLET_POOL_PRIVATE_KEYS_ENV_PREFIX=POOL_WALLET_KEY_
 # Example of additional wallet private keys for the pool:
-# WALLET_PRIVATE_KEY_1=your-first-additional-private-key
-# WALLET_PRIVATE_KEY_2=your-second-additional-private-key
-# WALLET_PRIVATE_KEY_3=your-third-additional-private-key
+# POOL_WALLET_KEY_1=your-first-additional-private-key
+# POOL_WALLET_KEY_2=your-second-additional-private-key
+# POOL_WALLET_KEY_3=your-third-additional-private-key
 
 # Smart Contract Addresses
 CONTRACT_DATA_REGISTRY_ADDRESS=0x0000000000000000000000000000000000000000
@@ -119,3 +119,11 @@ SUI_WALRUS_RELAY_URL=https://upload-relay.testnet.walrus.space
 
 # Nautilus TEE Configuration
 NAUTILUS_URL=
+
+# Offchain Storage Configuration (currently Pinata IPFS)
+# Required: JWT token from Pinata dashboard
+PINATA_JWT=your-pinata-jwt-token
+# Optional: API endpoint for uploads (easy to swap for Azure/other storage)
+PINATA_API_URL=https://api.pinata.cloud/pinning/pinFileToIPFS
+# Optional: Gateway URL for constructing public file URLs
+PINATA_GATEWAY_URL=https://dfusion-social-lens.mypinata.cloud/ipfs

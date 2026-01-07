@@ -64,27 +64,32 @@ export class OffchainStorageService implements OnModuleInit {
     file: Express.Multer.File,
   ): Promise<{ url: string; ipfsHash: string; size: number }> {
     if (!file || !file.buffer) {
+      this.logger.error(
+        `[uploadFile] No file or buffer provided - file exists: ${!!file}, buffer exists: ${!!file?.buffer}`,
+      );
       throw new HttpException('No file provided', HttpStatus.BAD_REQUEST);
     }
 
     if (!this.pinataJwt) {
-      this.logger.error('Pinata JWT not configured');
+      this.logger.error(
+        `[uploadFile] Pinata JWT not configured - apiUrl: ${this.pinataApiUrl}, gatewayUrl: ${this.pinataGatewayUrl}`,
+      );
       throw new HttpException(
         'Offchain storage service not configured',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 
+    const blobType = file.mimetype || 'application/octet-stream';
+    const blobFilename = file.originalname || 'encrypted-data';
+
     try {
-      // Create FormData with Blob (works with native fetch in Node.js 18+)
-      // Convert Buffer to Uint8Array for TypeScript compatibility
       const blob = new Blob([new Uint8Array(file.buffer)], {
-        type: file.mimetype || 'application/octet-stream',
+        type: blobType,
       });
       const formData = new FormData();
-      formData.append('file', blob, file.originalname || 'encrypted-data');
+      formData.append('file', blob, blobFilename);
 
-      // Make HTTP request to storage API
       const response = await fetch(this.pinataApiUrl, {
         method: 'POST',
         headers: {
@@ -96,19 +101,32 @@ export class OffchainStorageService implements OnModuleInit {
       if (!response.ok) {
         const errorText = await response.text();
         this.logger.error(
-          `Storage API error: ${response.status} - ${errorText}`,
+          `[uploadFile] Pinata API error - ` +
+            `status: ${response.status}, statusText: ${response.statusText}, ` +
+            `apiUrl: ${this.pinataApiUrl}, ` +
+            `file: { name: ${blobFilename}, size: ${file.size}, type: ${blobType} }, ` +
+            `response: ${errorText}`,
         );
-        throw new Error(`Storage API returned ${response.status}`);
+        throw new Error(
+          `Storage API returned ${response.status}: ${errorText}`,
+        );
       }
 
-      const result: PinataUploadResponse = await response.json();
+      const responseText = await response.text();
+      let result: PinataUploadResponse;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        this.logger.error(
+          `[uploadFile] Failed to parse Pinata JSON response - ` +
+            `parseError: ${parseError?.message}, ` +
+            `file: { name: ${blobFilename}, size: ${file.size}, type: ${blobType} }, ` +
+            `rawResponse: ${responseText.substring(0, 500)}`,
+        );
+        throw new Error(`Invalid JSON response from Pinata: ${responseText}`);
+      }
 
-      // Construct gateway URL (same pattern as refiner and frontend)
       const fileUrl = `${this.pinataGatewayUrl}/${result.IpfsHash}`;
-
-      this.logger.log(
-        `File uploaded to offchain storage: hash=${result.IpfsHash}, size=${file.size}`,
-      );
 
       return {
         url: fileUrl,
@@ -116,10 +134,19 @@ export class OffchainStorageService implements OnModuleInit {
         size: file.size,
       };
     } catch (error) {
-      this.logger.error(
-        'Offchain storage upload failed:',
-        error?.message || error,
-      );
+      // Only log if not already logged above (check if it's our thrown error)
+      const isAlreadyLogged =
+        error?.message?.startsWith('Storage API returned') ||
+        error?.message?.startsWith('Invalid JSON response');
+      if (!isAlreadyLogged) {
+        this.logger.error(
+          `[uploadFile] Unexpected error - ` +
+            `error: ${error?.message || error}, ` +
+            `apiUrl: ${this.pinataApiUrl}, ` +
+            `file: { name: ${blobFilename}, size: ${file.size}, type: ${blobType} }, ` +
+            `stack: ${error?.stack || 'no stack'}`,
+        );
+      }
       throw new HttpException(
         'Failed to upload encrypted data to off-chain storage. Please try again.',
         HttpStatus.BAD_GATEWAY,

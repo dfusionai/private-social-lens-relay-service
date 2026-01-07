@@ -34,6 +34,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { NautilusModule } from './nautilus/nautilus.module';
 import { OffchainStorageModule } from './offchain-storage/offchain-storage.module';
+import { RefinementModule } from './refinement/refinement.module';
 
 import { TransactionsModule } from './transactions/transactions.module';
 
@@ -93,6 +94,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     MonitoringModule,
     NautilusModule,
     OffchainStorageModule,
+    RefinementModule,
   ],
 })
 export class AppModule {}

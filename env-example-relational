@@ -119,3 +119,11 @@ SUI_WALRUS_RELAY_URL=https://upload-relay.testnet.walrus.space
 
 # Nautilus TEE Configuration
 NAUTILUS_URL=
+
+# Offchain Storage Configuration (currently Pinata IPFS)
+# Required: JWT token from Pinata dashboard
+PINATA_JWT=your-pinata-jwt-token
+# Optional: API endpoint for uploads (easy to swap for Azure/other storage)
+PINATA_API_URL=https://api.pinata.cloud/pinning/pinFileToIPFS
+# Optional: Gateway URL for constructing public file URLs
+PINATA_GATEWAY_URL=https://dfusion-social-lens.mypinata.cloud/ipfs

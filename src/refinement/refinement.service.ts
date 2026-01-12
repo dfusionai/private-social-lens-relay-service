@@ -17,7 +17,8 @@ export class RefinementService implements OnModuleInit {
   private readonly logger = new Logger(RefinementService.name);
   private serviceUrl: string;
   private refinerId: number;
-  private pinataJwt: string;
+  private relayUploadUrl: string;
+  private pinataJwt: string | undefined;
 
   constructor(private configService: ConfigService) {}
 
@@ -26,6 +27,7 @@ export class RefinementService implements OnModuleInit {
 
     this.serviceUrl = config.serviceUrl;
     this.refinerId = config.refinerId;
+    this.relayUploadUrl = config.relayUploadUrl;
     this.pinataJwt = config.pinataJwt;
 
     if (!this.serviceUrl) {
@@ -34,14 +36,15 @@ export class RefinementService implements OnModuleInit {
       );
     }
 
-    if (!this.pinataJwt) {
+    if (!this.relayUploadUrl) {
       this.logger.warn(
-        'PINATA_JWT not configured - refinement calls will fail',
+        'RELAY_UPLOAD_URL not configured - refinement TEE uploads will fail',
       );
     }
 
     this.logger.log(
-      `Refinement service initialized - URL: ${this.serviceUrl}, Refiner ID: ${this.refinerId}`,
+      `Refinement service initialized - URL: ${this.serviceUrl}, Refiner ID: ${this.refinerId}, ` +
+        `Relay Upload URL: ${this.relayUploadUrl}`,
     );
   }
 
@@ -57,7 +60,7 @@ export class RefinementService implements OnModuleInit {
 
   /**
    * Call the external refinement service to process data.
-   * The backend adds refiner_id and PINATA_API_JWT from its own config.
+   * The backend provides the relay upload URL for the TEE to upload refined data.
    *
    * @param fileId - ID of the file in Data Registry
    * @param encryptionKey - Original encryption key
@@ -75,21 +78,31 @@ export class RefinementService implements OnModuleInit {
       );
     }
 
-    if (!this.pinataJwt) {
-      this.logger.error('Pinata JWT not configured for refinement');
+    if (!this.relayUploadUrl) {
+      this.logger.error('Relay upload URL not configured for refinement');
       throw new HttpException(
         'Refinement service not configured',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 
+    // Build env_vars for TEE
+    // Include relay URL for new storage system
+    // Keep PINATA_API_JWT for backward compatibility until template is updated
+    const envVars: Record<string, string> = {
+      RELAY_UPLOAD_URL: this.relayUploadUrl,
+    };
+
+    // Include legacy Pinata JWT if configured (for backward compatibility)
+    if (this.pinataJwt) {
+      envVars.PINATA_API_JWT = this.pinataJwt;
+    }
+
     const requestBody = {
       file_id: fileId,
       encryption_key: encryptionKey,
       refiner_id: this.refinerId,
-      env_vars: {
-        PINATA_API_JWT: this.pinataJwt,
-      },
+      env_vars: envVars,
     };
 
     try {
@@ -123,7 +136,7 @@ export class RefinementService implements OnModuleInit {
     } catch (error) {
       this.logger.error(
         'Refinement service call failed:',
-        error?.message || error,
+        (error as Error)?.message || error,
       );
       throw new HttpException(
         'Failed to process data refinement. Please try again.',

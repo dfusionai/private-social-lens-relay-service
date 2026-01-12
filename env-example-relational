@@ -120,12 +120,19 @@ SUI_WALRUS_RELAY_URL=https://upload-relay.testnet.walrus.space
 # Nautilus TEE Configuration
 NAUTILUS_URL=
 
-# Offchain Storage Configuration (currently Pinata IPFS)
-# Required: JWT token from Pinata dashboard (also used for refinement)
+# Offchain Storage Configuration
+# ================================
+# Switch between storage providers: 'azure' (new) or 'pinata' (legacy)
+# To rollback to Pinata: set OFFCHAIN_STORAGE_PROVIDER=pinata and configure PINATA_* vars
+OFFCHAIN_STORAGE_PROVIDER=azure
+
+# Azure/New Storage Service (required when provider is 'azure')
+OFFCHAIN_STORAGE_URL=http://localhost:3001
+OFFCHAIN_STORAGE_API_KEY=your-api-key-here
+
+# Pinata IPFS (required when provider is 'pinata', for rollback)
 PINATA_JWT=your-pinata-jwt-token
-# Optional: API endpoint for uploads (easy to swap for Azure/other storage)
 PINATA_API_URL=https://api.pinata.cloud/pinning/pinFileToIPFS
-# Optional: Gateway URL for constructing public file URLs
 PINATA_GATEWAY_URL=https://dfusion-social-lens.mypinata.cloud/ipfs
 
 # Refinement Service Configuration
@@ -133,3 +140,6 @@ PINATA_GATEWAY_URL=https://dfusion-social-lens.mypinata.cloud/ipfs
 REFINEMENT_SERVICE_URL=https://592387e3ed196d95ce8df7af54dab6ebca21a3c8-8000.dstack-prod5.phala.network/refine
 # Optional: Refiner ID (default: 15)
 REFINER_ID=15
+# Required: URL for refinement TEE to upload refined data back through relay
+# This should point to the relay's offchain-storage endpoint
+RELAY_UPLOAD_URL=http://localhost:3000/api/relay/offchain-storage

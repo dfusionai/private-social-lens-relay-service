@@ -3,13 +3,14 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UploadResponseDto {
   @ApiProperty({
     description: 'Public URL to the uploaded file',
-    example: 'https://dfusion-social-lens.mypinata.cloud/ipfs/QmXyz...',
+    example: 'https://storage.socialtruth.io/blobs/a1b2c3d4e5f6...',
   })
   url: string;
 
   @ApiProperty({
-    description: 'IPFS hash (CID) of the uploaded file',
-    example: 'QmXyz123abc...',
+    description:
+      'Content hash (SHA-256) of the uploaded file. Named ipfsHash for backward compatibility.',
+    example: 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890',
   })
   ipfsHash: string;
 
@@ -19,4 +20,3 @@ export class UploadResponseDto {
   })
   size: number;
 }
-

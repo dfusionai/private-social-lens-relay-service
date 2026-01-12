@@ -45,6 +45,57 @@ Before you begin, ensure you have the following installed:
     * `WALLET_PRIVATE_KEY` (your wallet private key)
     * `WALLET_ENCRYPTION_KEY` (for wallet encryption)
     * `CONTRACT_*` addresses (smart contract addresses)
+    * `OFFCHAIN_STORAGE_*` variables (see [Offchain Storage Configuration](#offchain-storage-configuration))
+
+---
+
+## Offchain Storage Configuration
+
+The relay service handles encrypted file uploads to offchain storage. It supports two storage providers with easy switching for rollback capability.
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `OFFCHAIN_STORAGE_PROVIDER` | No | `azure` | Storage provider: `azure` (new) or `pinata` (legacy) |
+| `OFFCHAIN_STORAGE_URL` | Yes* | - | URL of the offchain storage service (e.g., `http://localhost:3001`) |
+| `OFFCHAIN_STORAGE_API_KEY` | Yes* | - | API key for authenticating with the offchain storage service |
+| `RELAY_UPLOAD_URL` | Yes | - | URL for refinement TEE to upload data back through relay |
+| `PINATA_JWT` | Yes** | - | Pinata API JWT token (legacy, for rollback) |
+| `PINATA_API_URL` | No | `https://api.pinata.cloud/pinning/pinFileToIPFS` | Pinata upload endpoint |
+| `PINATA_GATEWAY_URL` | No | `https://dfusion-social-lens.mypinata.cloud/ipfs` | Pinata gateway for download URLs |
+
+\* Required when `OFFCHAIN_STORAGE_PROVIDER=azure`  
+\** Required when `OFFCHAIN_STORAGE_PROVIDER=pinata`
+
+### Example Configuration
+
+**Using new Azure-based storage (recommended):**
+```bash
+OFFCHAIN_STORAGE_PROVIDER=azure
+OFFCHAIN_STORAGE_URL=
+OFFCHAIN_STORAGE_API_KEY=
+RELAY_UPLOAD_URL=
+```
+
+**Rollback to Pinata (if needed):**
+```bash
+OFFCHAIN_STORAGE_PROVIDER=pinata
+PINATA_JWT=
+PINATA_API_URL=
+PINATA_GATEWAY_URL=
+RELAY_UPLOAD_URL=
+```
+
+### RELAY_UPLOAD_URL
+
+This URL is passed to the **Refinement TEE** so it can upload processed data back through the relay:
+
+1. Relay receives refinement request from frontend
+2. Relay calls Refinement TEE, passing `RELAY_UPLOAD_URL` in `env_vars`
+3. TEE processes data and uploads result to `RELAY_UPLOAD_URL`
+4. Relay forwards upload to offchain storage service
+
 
 ---
 

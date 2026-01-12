@@ -9,10 +9,16 @@ class EnvironmentVariablesValidator {
 
   @IsNumber()
   @IsOptional()
-  REFINER_ID: number;
+  REFINER_ID?: number;
 
+  // URL for refinement TEE to upload through relay
   @IsString()
-  PINATA_JWT: string;
+  RELAY_UPLOAD_URL: string;
+
+  // Legacy Pinata JWT (optional, for backward compatibility)
+  @IsString()
+  @IsOptional()
+  PINATA_JWT?: string;
 }
 
 export default registerAs<RefinementConfig>('refinement', () => {
@@ -21,7 +27,7 @@ export default registerAs<RefinementConfig>('refinement', () => {
   return {
     serviceUrl: process.env.REFINEMENT_SERVICE_URL || '',
     refinerId: parseInt(process.env.REFINER_ID || '15', 10),
-    pinataJwt: process.env.PINATA_JWT || '',
+    relayUploadUrl: process.env.RELAY_UPLOAD_URL || '',
+    pinataJwt: process.env.PINATA_JWT,
   };
 });
-
